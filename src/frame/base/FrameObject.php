@@ -22,9 +22,7 @@
  * //设置用户年龄
  * $user->age = 25;     //相当于调用了 $user->setAge(25)
  * 
- * //除了使用关键词new，还可以使用静态方法create和instance来生成对象实例，这对对象的链式操作提供了遍历
- * 两者的区别是create每次返回一个新的对象，instance返回同一个对象
- * $user = User::create(['age'=>5])
+ * //除了使用关键词new，还可以使用静态方法instance来生成对象单例
  * $user = User::instance(['age'=>10])
  * 
  * ~~~~~~·
@@ -56,16 +54,6 @@ class FrameObject {
     }
 
     /**
-     * FrameObject::create()执行对象的初始化
-     * @param array $config
-     * @return $className 每次返回新的对象
-     */
-    static public function create($config = []) {
-        $className = get_called_class();
-        return new $className($config);
-    }
-
-    /**
      * FrameObject::instance()
      * @param array $config
      * @return $className 返回类的单例
@@ -73,12 +61,18 @@ class FrameObject {
     static public function instance($config = []) {
         $className = get_called_class();
         if (!isset(self::$_instances[$className])) {
-            return self::$_instances[$className] = static::create($config);
+            return self::$_instances[$className] = new $className($config);
         }
         return static::configure(self::$_instances[$className], $config);
     }
 
-    //@TODO 从容器中取对象
+    /**
+     * 从容器中取对象
+     * @param string $id
+     * @param boolean $throwException
+     * @return object
+     * @throws ExceptionFrame
+     */
     static public function di($id, $throwException = true) {
         if (FrameApp::$app->has($id)) {
             return FrameApp::$app->get($id);
@@ -164,7 +158,7 @@ class FrameObject {
      * @return object
      * @throws ExceptionFrame
      */
-    public function createObject($definition, $params = []) {
+    public static function createObject($definition, $params = []) {
         //如果是字串，说明是个类名，直接实例化
         if (is_string($definition)) {
             return new $definition($params);

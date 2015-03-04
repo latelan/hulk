@@ -8,7 +8,7 @@
 abstract class FrameDao extends FrameObject{
     
     static public function find($sql=null,$db=null) {
-        return FrameQuery::create(['sql'=>$sql,'db'=>$db])->from(static::tableName().' as t');
+        return (new FrameQuery(['sql'=>$sql,'db'=>$db]))->from(static::tableName().' as t');
     }
     
     static public function insert($columns) {

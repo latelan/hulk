@@ -1,11 +1,26 @@
 <?php
+/**
+ * 导入自动加载函数
+ */
 require_once 'auto_load.php';
 
+/**
+ * 获取web应用的配置数组
+ */
 $config = require dirname(__DIR__) . '/../config/app.php';
 
 
 try {
-    $app = FrameApp::create($config)->run();
+    /**
+     * 实例化一个web应用
+     */
+    $app = new FrameWebApp($config);
+    
+    /**
+     * 运行应用
+     */
+    $app->run();
+    
 } catch (Exception $e) {
     header('content-type:text/html;charset=utf-8');
     echo $e->getMessage();

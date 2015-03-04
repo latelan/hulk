@@ -35,7 +35,7 @@ class FrameDI extends FrameObject {
             if (is_object($definition) && !$definition instanceof Closure) {
                 return $this->_components[$id] = $definition;
             } else {
-                return $this->_components[$id] = $this->createObject($definition);
+                return $this->_components[$id] = static::createObject($definition);
             }
         }
         if ($throwException) {

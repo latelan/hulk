@@ -1,18 +1,24 @@
 <?php
+/**
+ * 命令行应用的配置文件
+ */
+
+//defined('HULK_DEBUG') or define('HULK_DEBUG', true);
 
 return [
-    'name' => '这是一个测试的脚本',
     'debug' => true,
-    'srcPath' => dirname(__DIR__) . '/src',
-    'consolePath'=>function(){return $this->srcPath.'/app/task';},
-    'logPath'=>function(){return $this->srcPath.'/../logs';},
-    'basePath'=>function(){return $this->srcPath.'/../../';},
-    'defaultRoute' => 'hello',
-    'timeZone' => 'PRC',
+    'env' => 'dev',
+    'basePath' => dirname(__DIR__),
+    'consolePath' => function() {
+        return $this->basePath . '/src/app/task';
+    },
+    'logPath' => function() {
+        return $this->basePath . '/logs';
+    },
+//    'defaultRoute' => 'home',
+//    'timeZone' => 'PRC',
     'components' => [
-//        'db'=>[
-//            
-//        ]
+        'db' => require __DIR__ . '/db.php',
     ],
 ];
 ?>

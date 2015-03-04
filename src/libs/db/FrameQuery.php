@@ -721,14 +721,4 @@ class FrameQuery extends FrameObject {
             return $cloneQuery->queryOne();
         }
     }
-    
-    /**
-     * 返回FrameQuery的实例对象
-     * @param array $config
-     * @return FrameQuery
-     */
-    public static function create($config = array()) {
-        return parent::create($config);
-    }
-
 }

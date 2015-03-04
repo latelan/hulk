@@ -14,19 +14,19 @@ function getClassPath()
     if (!empty($classpath)) return $classpath;
     if(function_exists("apc_fetch"))
     {
-        $classpath = apc_fetch("hulk_app:1425455977");
+        $classpath = apc_fetch("hulk_app:1425467742");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        apc_store("hulk_app:1425455977",$classpath); 
+        apc_store("hulk_app:1425467742",$classpath); 
     }
     else if(function_exists("eaccelerator_get"))
     {
-        $classpath = eaccelerator_get("hulk_app:1425455977");
+        $classpath = eaccelerator_get("hulk_app:1425467742");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        eaccelerator_put("hulk_app:1425455977",$classpath); 
+        eaccelerator_put("hulk_app:1425467742",$classpath); 
     }
     else
     {
@@ -37,13 +37,10 @@ function getClassPath()
 function getClassMapDef()
 {
     return array(
-        "HelloController"              => '/home/zhangjiulong/web/lon/src/app//controllers/admin/HelloController.php',
-        "IndexController"              => '/home/zhangjiulong/web/lon/src/app//controllers/admin/IndexController.php',
-        "AdminController"              => '/home/zhangjiulong/web/lon/src/app//controllers/AdminController.php',
-        "AdminHulkController"          => '/home/zhangjiulong/web/lon/src/app//controllers/AdminHulkController.php',
+        "HomeController"               => '/home/zhangjiulong/web/lon/src/app//controllers/HomeController.php',
         "TimeDao"                      => '/home/zhangjiulong/web/lon/src/app//daos/TimeDao.php',
         "TestModel"                    => '/home/zhangjiulong/web/lon/src/app//models/TestModel.php',
-        "HelpConsole"                  => '/home/zhangjiulong/web/lon/src/app//task/HelpConsole.php',
+        "HomeConsole"                  => '/home/zhangjiulong/web/lon/src/app//task/HomeConsole.php',
         "ExceptionFrame"               => '/home/zhangjiulong/web/lon/src/frame//base/ExceptionFrame.php',
         "FrameApp"                     => '/home/zhangjiulong/web/lon/src/frame//base/FrameApp.php',
         "FrameDI"                      => '/home/zhangjiulong/web/lon/src/frame//base/FrameDI.php',
@@ -54,6 +51,7 @@ function getClassMapDef()
         "FrameController"              => '/home/zhangjiulong/web/lon/src/frame//web/FrameController.php',
         "FrameRequest"                 => '/home/zhangjiulong/web/lon/src/frame//web/FrameRequest.php',
         "FrameResponse"                => '/home/zhangjiulong/web/lon/src/frame//web/FrameResponse.php',
+        "FrameWebApp"                  => '/home/zhangjiulong/web/lon/src/frame//web/FrameWebApp.php',
         "FrameDao"                     => '/home/zhangjiulong/web/lon/src/libs//db/FrameDao.php',
         "FrameDbExpression"            => '/home/zhangjiulong/web/lon/src/libs//db/FrameDbExpression.php',
         "FrameDB"                      => '/home/zhangjiulong/web/lon/src/libs//db/FrameDB.php',

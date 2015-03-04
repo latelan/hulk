@@ -1,21 +1,33 @@
 <?php
+/**
+ * Web应用的配置文件
+ */
 
 return [
-    'name'=>'这是一个测试的应用',
+    /**
+     * 是否开启debug
+     */
     'debug'=>true,
-    'srcPath'=>  dirname(__DIR__).'/src',
-    'controllerPath'=>  function(){return $this->srcPath.'/app/controllers';},
-    'logPath'=>  function(){return $this->srcPath.'/../logs';},
+    /**
+     * 设置应用的运行环境，取值范围 dev|beta|prod
+     */
+    'env'=>'dev',
+    /**
+     * 设置应用的根目录
+     */
+    'basePath'=>  dirname(__DIR__),
+    /**
+     * 控制器目录,默认为basePath/src/app/controllers
+     */
+//    'controllerPath'=>  function(){return $this->basePath.'/src/app/controllers';},
+//    'logPath'=>  function(){return $this->basePath.'/logs';},
 //    'defaultRoute'=>'home',
-    'timeZone'=>'PRC',
+//    'timeZone'=>'PRC',
+    /**
+     * components中配置的对象或者对象的配置文件会被注入到容器中
+     */
     'components'=>[
-        'db'=>[
-            'class'=>'FrameDB',
-            'dsn' => 'mysql:host=10.16.57.145;dbname=hulk_log;port=5002',
-            'username' => 'hulk',
-            'password' => '0c1ddf12383bf776',
-            'charset' => 'utf8',
-        ],
+        'db'=>require __DIR__.'/db.php',
         'log'=>[
             'class'=>'FrameLog',
             'targets'=>[

@@ -27,7 +27,7 @@ class FrameLog extends FrameObject {
         
         foreach ($this->targets as $k => $target) {
             if (!$target instanceof FrameLogTarget) {
-                $this->targets[$k] = $this->createObject($target);
+                $this->targets[$k] = static::createObject($target);
             }
         }
     }
