@@ -1,8 +1,8 @@
 <?php
+
 /**
  * 命令行应用的配置文件
  */
-
 //defined('HULK_DEBUG') or define('HULK_DEBUG', true);
 
 return [
@@ -19,6 +19,20 @@ return [
 //    'timeZone' => 'PRC',
     'components' => [
         'db' => require __DIR__ . '/db.php',
+        'log' => [
+            'class' => 'FrameLog',
+            'targets' => [
+                [
+                    'class' => 'FrameLogFileTarget',
+//                    'levels'=>['info','error'],
+                ],
+                [
+                    'class' => 'FrameLogDbTarget',
+                    'tableName' => 'loger',
+//                    'levels'=>['info','error'],
+                ],
+            ],
+        ]
     ],
 ];
 ?>

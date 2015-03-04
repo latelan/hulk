@@ -91,7 +91,7 @@ class FrameQuery extends FrameObject {
         $this->prepare();
         
         try {
-            p($this->getRawSql(), false);
+//            p($this->getRawSql(), false);
             $this->pdoStatement->execute();
             $n = $this->pdoStatement->rowCount();
             return $n;
