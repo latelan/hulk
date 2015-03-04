@@ -1,0 +1,22 @@
+2015-03-04 15:59:40 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:02:10 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:04:54 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:06:18 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:07:44 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Error to execute sql, SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+2015-03-04 16:08:01 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:09:10 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:09:37 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:09:59 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:10:14 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
+2015-03-04 16:10:50 [error][FrameLog::flush]
+Uable to send log via FrameLogDbTarget:Fail to prepare SQL: INSERT INTO `loger`(`level`, `category`, `message`, `log_time`) VALUES (4, ?, ?, ?), (8, ?, ?, ?), (1, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?), (1, ?, ?, ?), (8, ?, ?, ?), (4, ?, ?, ?),SQLSTATE[HY093]: Invalid parameter number: Columns/Parameters are 1-based
