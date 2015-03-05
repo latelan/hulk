@@ -202,8 +202,22 @@ class FrameApp extends FrameDI {
 
         return $response;
     }
+    
+    
+    /**
+     * 返回脚本执行到当前花费的毫秒数
+     * @return float
+     */
+    public function getConsumeTime() {
+        $spend = microtime(true) - $this->startTime;
+        return round($spend*1000, 2);
+    }
 
+    /**
+     * 脚本结束时，执行的方法
+     */
     public function end() {
+        echo 1;
         if (static::$app->has('log')) {
             static::$app->get('log')->flush(true);
         }

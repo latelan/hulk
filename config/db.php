@@ -5,6 +5,7 @@
             'username' => 'hulk',
             'password' => '0c1ddf12383bf776',
             'charset' => 'utf8',
+//            'enableSavepoint'=>true,
         ];
 ?>
 

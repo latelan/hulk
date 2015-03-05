@@ -11,10 +11,15 @@ class FrameDB extends FrameObject {
     public $username;
     public $password;
     public $charset = 'utf8';
+    /**
+     * 是否支持事务嵌套
+     * @var boolean 
+     */
+    public $enableSavepoint = true;
 
     /**
      * pdo的属性配置
-     * @var type 
+     * @var array 
      */
     public $atttibutes;
 
@@ -215,6 +220,22 @@ class FrameDB extends FrameObject {
             'sql' => $sql
         ]);
         return $query->bindValues($params);
+    }
+    
+    public function supportSavepoint() {
+        return $this->enableSavepoint==true;
+    }
+    
+    public function createSavepoint($name) {
+        $this->createQuery('SAVEPOINT '.$name)->execute();
+    }
+    
+    public function rollbackSavepoint($name) {
+        $this->createQuery('ROLLBACK TO SAVEPOINT '.$name)->execute();
+    }
+    
+    public function releaseSavepoint($name) {
+        $this->createQuery('RELEASE SAVEPOINT '.$name)->execute();
     }
 
 }

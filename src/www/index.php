@@ -38,8 +38,6 @@ function p($target, $bool = true) {
     $iii++;
     if ($bool) {
         exit;
-    } else {
-        echo '<br />';
     }
 }
 

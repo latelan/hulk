@@ -683,7 +683,7 @@ class FrameQuery extends FrameObject {
         $this->bindValues($this->params);
         $this->prepare();
         try {
-            print($this->getRawSql());
+//            print($this->getRawSql());
             $this->pdoStatement->execute();
             if ($method == '') {
                 return $this->pdoStatement;

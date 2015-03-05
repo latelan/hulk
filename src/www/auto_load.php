@@ -14,19 +14,19 @@ function getClassPath()
     if (!empty($classpath)) return $classpath;
     if(function_exists("apc_fetch"))
     {
-        $classpath = apc_fetch("hulk_app:1425467742");
+        $classpath = apc_fetch("hulk_app:1425548963");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        apc_store("hulk_app:1425467742",$classpath); 
+        apc_store("hulk_app:1425548963",$classpath); 
     }
     else if(function_exists("eaccelerator_get"))
     {
-        $classpath = eaccelerator_get("hulk_app:1425467742");
+        $classpath = eaccelerator_get("hulk_app:1425548963");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        eaccelerator_put("hulk_app:1425467742",$classpath); 
+        eaccelerator_put("hulk_app:1425548963",$classpath); 
     }
     else
     {
