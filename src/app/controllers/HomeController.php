@@ -13,16 +13,18 @@ class HomeController extends FrameController{
     }
     
     public function dbAction() {
+//        $res = FrameDB::di()->createQuery('select version()')->queryOne();
+//        p($res);
 //        $res = $this->insert('zhangjiulong');
 //        $res = $this->batch();
 //        $res = $this->update();
 //        $res = $this->delete();
         $trans = FrameApp::$app->db->beginTransaction();
         try {
-            $this->insert('zjl1');
+            $this->insert('zjl11');
             $this->second();
 //            throw new Exception('zjl1');
-            $this->insert('zjl2');
+            $this->insert('zjl21');
             $trans->commit();
         } catch (Exception $exc) {
             echo $exc->getMessage();
@@ -33,9 +35,9 @@ class HomeController extends FrameController{
     public function second() {
         $trans = FrameApp::$app->db->beginTransaction();
         try {
-            $this->insert('zjl3');
-//            throw new Exception('zjl3');
-            $this->insert('zjl4');
+            $this->insert('zjl31');
+            throw new Exception('zjl3');
+            $this->insert('zjl41');
             $trans->commit();
         } catch (Exception $exc) {
             echo $exc->getMessage();
@@ -52,7 +54,7 @@ class HomeController extends FrameController{
     }
     
     public function insert($name) {
-        return UserDao::insert(['name'=>$name]);
+        return FrameDB::di()->createQuery()->insert('user',['name'=>$name]);
     }
     
     public function batch() {

@@ -206,7 +206,7 @@ class FrameQuery extends FrameObject{
     /**
      * 执行sql
      * @return int 返回影响的行数
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function execute() {
         $sql = $this->getSql();
@@ -221,14 +221,14 @@ class FrameQuery extends FrameObject{
             $n = $this->pdoStatement->rowCount();
             return $n;
         } catch (Exception $e) {
-            throw new Exception('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
+            throw new ExceptionFrame('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
         }
     }
 
     /**
      * SQL语句的预处理
      * @return null
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function prepare() {
         try {
@@ -250,7 +250,7 @@ class FrameQuery extends FrameObject{
              */
             $this->bindPendingParams();
         } catch (Exception $e) {
-            throw new Exception('Fail to prepare SQL: ' . $sql . ',' . $e->getMessage(), (int) $e->getCode());
+            throw new ExceptionFrame('Fail to prepare SQL: ' . $sql . ',' . $e->getMessage(), (int) $e->getCode());
         }
     }
 
@@ -326,7 +326,7 @@ class FrameQuery extends FrameObject{
      * 生成sql语句通过$query数组
      * @param array $query
      * @return string
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function buildQuery($query) {
         $sql = !empty($query['distinct']) ? 'SELECT DISTINCT' : 'SELECT';
@@ -334,7 +334,7 @@ class FrameQuery extends FrameObject{
         if (!empty($query['from'])) {
             $sql .= "\nFROM " . $query['from'];
         } else {
-            throw new Exception('The DB query must contain the "from" portion');
+            throw new ExceptionFrame('The DB query must contain the "from" portion');
         }
         if (!empty($query['join'])) {
             $sql .= "\n" . (is_array($query['join']) ? implode("\n", $query['join']) : $query['join']);
@@ -869,7 +869,7 @@ class FrameQuery extends FrameObject{
      * 组装条件
      * @param string|array $conditions
      * @return string
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     protected function processConditions($conditions) {
         if (!is_array($conditions)) {
@@ -931,7 +931,7 @@ class FrameQuery extends FrameObject{
             }
             return implode($andor, $expressions);
         }
-        throw new Exception('unknow operator: ' . $operator);
+        throw new ExceptionFrame('unknow operator: ' . $operator);
     }
 
     /**
@@ -1013,7 +1013,7 @@ class FrameQuery extends FrameObject{
      * @param string $method 查询类型
      * @param 返回的数据结构 $fetchMode
      * @return mixed
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     private function queryInternal($method, $fetchMode = null) {
         //绑定参数
@@ -1036,7 +1036,7 @@ class FrameQuery extends FrameObject{
                 return $result;
             }
         } catch (Exception $e) {
-            throw new Exception('Query fail:' . $e->getMessage(), (int) $e->getCode());
+            throw new ExceptionFrame('Query fail:' . $e->getMessage(), (int) $e->getCode());
         }
     }
 

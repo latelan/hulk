@@ -25,11 +25,11 @@ class FrameTransaction extends FrameObject {
 
     /**
      * 开启事务
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function begin() {
         if ($this->db === null) {
-            throw new Exception('FrameTransaction::db must be set.');
+            throw new ExceptionFrame('FrameTransaction::db must be set.');
         }
 
         $this->db->open();
@@ -43,11 +43,11 @@ class FrameTransaction extends FrameObject {
 
     /**
      * 提交事务
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function commit() {
         if (!$this->getIsActive()) {
-            throw new Exception('Fail to commint transaction: transaction was inactive.');
+            throw new ExceptionFrame('Fail to commint transaction: transaction was inactive.');
         }
         $this->_level--;
         
@@ -73,7 +73,7 @@ class FrameTransaction extends FrameObject {
             return;
         }
 
-        throw new Exception('the inner transaction error!');
+        throw new ExceptionFrame('the inner transaction error!');
         
     }
 

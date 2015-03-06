@@ -97,21 +97,21 @@ class FrameDB extends FrameObject {
     /**
      * 打开数据库链接
      * @return type
-     * @throws Exception
+     * @throws ExceptionFrame
      */
     public function open() {
         if ($this->pdo !== null) {
             return;
         }
         if (empty($this->dsn)) {
-            throw new Exception('FrameDB::dsn cannot be empty!');
+            throw new ExceptionFrame('FrameDB::dsn cannot be empty!');
         }
         //@TODO log
         try {
             $this->pdo = $this->createPdoInstance();
             $this->initConnection();
         } catch (PDOException $e) {
-            throw new Exception($e->getMessage(), (int) $e->getCode());
+            throw new ExceptionFrame($e->getMessage(), (int) $e->getCode());
         }
     }
 
