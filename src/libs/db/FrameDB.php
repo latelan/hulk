@@ -5,42 +5,81 @@
  * 数据库链接
  * @author zhangjiulong
  */
-class FrameDB extends FrameObject {
+class FrameDB {
 
-    public $dsn;
-    public $username;
-    public $password;
-    public $charset = 'utf8';
     /**
-     * 是否支持事务嵌套
-     * @var boolean 
+     * 数据源名称或叫做 DSN，包含了请求连接到数据库的信息。 
+     * eg:
+     * $dsn  =  'mysql:dbname=testdb;host=127.0.0.1' ;
+     * @var string 
      */
-    public $enableSavepoint = true;
+    public $dsn;
+    
+    /**
+     * DSN字符串中的用户名
+     * @var string
+     */
+    public $username;
+    
+    /**
+     * DSN字符串中的密码
+     * @var string 
+     */
+    public $password;
 
     /**
      * pdo的属性配置
+     * 一个具体驱动的连接选项的键=>值数组。
      * @var array 
      */
     public $atttibutes;
+    
+    /**
+     * 数据库的字符集
+     * @var string
+     */
+    public $charset = 'utf8';
 
     /**
-     *
+     * PDO连接对象
      * @var PDO
      */
     public $pdo;
+    /**
+     * PDO对象的类名，可扩展为原声PDO的子类对象
+     * @var type 
+     */
     public $pdoClass = 'PDO';
+    
+    /**
+     * 表前缀或者表后缀
+     * @var string 
+     */
     public $tablePrefix = '';
+    
+    /**
+     * 驱动名称 mysql|mssql等
+     * @var string
+     */
     private $_driverName;
+    
+    /**
+     * 事务对象
+     * @var FrameTransaction 
+     */
     private $_transaction;
     
     /**
-     * 
-     * @param string $id 容器中FrameDB对应的类ID标示
-     * @param boolean $throwException
-     * @return FrameDB
+     * 构造函数，实现对象属性的赋值
+     * @param array $config
      */
-    public static function di($id='db', $throwException = true) {
-        return parent::di($id, $throwException);
+    public function __construct($config = []) {
+        if(!empty($config) && is_array($config)){
+            foreach ($config as $name => $value) {
+                $this->{$name} = $value;
+            }
+        }
+        $this->init();
     }
     
     /**
@@ -52,7 +91,6 @@ class FrameDB extends FrameObject {
     }
     
     public function init() {
-        parent::init();
         //默认自动打开
         $this->open();
     }
@@ -60,21 +98,21 @@ class FrameDB extends FrameObject {
     /**
      * 打开数据库链接
      * @return type
-     * @throws ExceptionFrame
+     * @throws Exception
      */
     public function open() {
         if ($this->pdo !== null) {
             return;
         }
         if (empty($this->dsn)) {
-            throw new ExceptionFrame('FrameDB::dsn cannot be empty!');
+            throw new Exception('FrameDB::dsn cannot be empty!');
         }
         //@TODO log
         try {
             $this->pdo = $this->createPdoInstance();
             $this->initConnection();
         } catch (PDOException $e) {
-            throw new ExceptionFrame($e->getMessage(), (int) $e->getCode());
+            throw new Exception($e->getMessage(), (int) $e->getCode());
         }
     }
 
@@ -89,11 +127,18 @@ class FrameDB extends FrameObject {
         }
     }
 
+    /**
+     * 创建PDO实例
+     * @return PDO
+     */
     protected function createPdoInstance() {
         $pdoClass = $this->pdoClass;
         return new $pdoClass($this->dsn, $this->username, $this->password, $this->atttibutes);
     }
 
+    /**
+     * 初始化数据库连接
+     */
     protected function initConnection() {
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         if ($this->charset !== null && in_array($this->getDriverName(), ['mysql', 'pgsql', 'mysqli', 'cubrid'])) {
@@ -101,6 +146,10 @@ class FrameDB extends FrameObject {
         }
     }
 
+    /**
+     * 获取驱动名
+     * @return string
+     */
     public function getDriverName() {
         if ($this->_driverName === null) {
             $this->_driverName = strtolower(substr($this->dsn, 0, strpos($this->dsn, ':')));
@@ -108,6 +157,10 @@ class FrameDB extends FrameObject {
         return $this->_driverName;
     }
 
+    /**
+     * 设置驱动名
+     * @param string $driverName
+     */
     public function setDriverName($driverName) {
         $this->_driverName = strtolower($driverName);
     }
@@ -133,6 +186,11 @@ class FrameDB extends FrameObject {
         return $this->_transaction && $this->_transaction->getIsActive() ? $this->_transaction : null;
     }
 
+    /**
+     * 引号标记sql语句
+     * @param string $sql
+     * @return string
+     */
     public function quoteSql($sql) {
         return preg_replace_callback(
                 '/(\\{\\{(%?[\w\-\. ]+%?)\\}\\}|\\[\\[([\w\-\. ]+)\\]\\])/', function ($matches) {
@@ -145,6 +203,11 @@ class FrameDB extends FrameObject {
         );
     }
 
+    /**
+     * 引号标记字段名
+     * @param string $name
+     * @return string
+     */
     public function quoteColumnName($name) {
         if (strpos($name, '(') !== false || strpos($name, '[[') !== false || strpos($name, '{{') !== false) {
             return $name;
@@ -157,6 +220,11 @@ class FrameDB extends FrameObject {
         return $prefix . $this->quoteSimpleColumnName($name);
     }
 
+    /**
+     * 引号标记表名
+     * @param string $name
+     * @return string
+     */
     public function quoteTableName($name) {
         if (strpos($name, '(') !== false || strpos($name, '{{') !== false) {
             return $name;
@@ -172,7 +240,7 @@ class FrameDB extends FrameObject {
     }
 
     /**
-     * 引用表名
+     * 引号标记表名
      * @param string $name
      * @return string
      */
@@ -181,7 +249,7 @@ class FrameDB extends FrameObject {
     }
 
     /**
-     * 引用字段名
+     * 引号标记字段名
      * @param string $name
      * @return string
      */
@@ -189,10 +257,16 @@ class FrameDB extends FrameObject {
         return strpos($name, '`') !== false || $name === '*' ? $name : '`' . $name . '`';
     }
 
+    /**
+     * 引号标记值
+     * @param string $str
+     * @return string
+     */
     public function quoteValue($str) {
         if (!is_string($str)) {
             return $str;
         }
+        $this->open();
         if (($value = $this->pdo->quote($str)) !== false) {
             return $value;
         } else {
@@ -201,6 +275,12 @@ class FrameDB extends FrameObject {
         }
     }
 
+    /**
+     * 获取pdo类型，pdo绑定参数时使用
+     * @staticvar array $map
+     * @param mixed $value
+     * @return int
+     */
     public function getPdoType($value) {
         static $map = array
             (
@@ -214,6 +294,12 @@ class FrameDB extends FrameObject {
         return isset($map[$type]) ? $map[$type] : PDO::PARAM_STR;
     }
 
+    /**
+     * 创建Query操作对象
+     * @param string|null $sql
+     * @param array $params
+     * @return FrameQuery
+     */
     public function createQuery($sql = null, $params = []) {
         $query = new FrameQuery([
             'db' => $this,
@@ -221,21 +307,4 @@ class FrameDB extends FrameObject {
         ]);
         return $query->bindValues($params);
     }
-    
-    public function supportSavepoint() {
-        return $this->enableSavepoint==true;
-    }
-    
-    public function createSavepoint($name) {
-        $this->createQuery('SAVEPOINT '.$name)->execute();
-    }
-    
-    public function rollbackSavepoint($name) {
-        $this->createQuery('ROLLBACK TO SAVEPOINT '.$name)->execute();
-    }
-    
-    public function releaseSavepoint($name) {
-        $this->createQuery('RELEASE SAVEPOINT '.$name)->execute();
-    }
-
 }

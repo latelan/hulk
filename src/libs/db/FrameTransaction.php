@@ -12,6 +12,11 @@ class FrameTransaction extends FrameObject {
      * @var FrameDB
      */
     public $db;
+    
+    /**
+     * 事务的层级，用来控制多层事务嵌套
+     * @var type 
+     */
     private $_level = 0;
 
     public function getIsActive() {
@@ -20,11 +25,11 @@ class FrameTransaction extends FrameObject {
 
     /**
      * 开启事务
-     * @throws ExceptionFrame
+     * @throws Exception
      */
     public function begin() {
         if ($this->db === null) {
-            throw new ExceptionFrame('FrameTransaction::db must be set.');
+            throw new Exception('FrameTransaction::db must be set.');
         }
 
         $this->db->open();
@@ -33,30 +38,22 @@ class FrameTransaction extends FrameObject {
             $this->db->pdo->beginTransaction();
         }
 
-        if ($this->db->supportSavepoint()) {
-            $this->db->createSavepoint('LEVEL' . $this->_level);
-        }
-
         $this->_level++;
     }
 
     /**
      * 提交事务
-     * @throws ExceptionFrame
+     * @throws Exception
      */
     public function commit() {
         if (!$this->getIsActive()) {
-            throw new ExceptionFrame('Fail to commint transaction: transaction was inactive.');
+            throw new Exception('Fail to commint transaction: transaction was inactive.');
         }
         $this->_level--;
+        
         //@TODO log
         if ($this->_level == 0) {
             $this->db->pdo->commit();
-            return;
-        }
-        
-        if ($this->db->supportSavepoint()) {
-            $this->db->releaseSavepoint('LEVEL' . $this->_level);
         }
     }
 
@@ -76,11 +73,8 @@ class FrameTransaction extends FrameObject {
             return;
         }
 
-        if ($this->db->supportSavepoint()) {
-            $this->db->rollbackSavepoint('LEVEL' . $this->_level);
-        } else {
-            throw new ExceptionFrame('rollback fail: nested transaction not supported');
-        }
+        throw new Exception('the inner transaction error!');
+        
     }
 
 }

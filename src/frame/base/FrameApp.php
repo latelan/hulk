@@ -217,7 +217,6 @@ class FrameApp extends FrameDI {
      * 脚本结束时，执行的方法
      */
     public function end() {
-        echo 1;
         if (static::$app->has('log')) {
             static::$app->get('log')->flush(true);
         }

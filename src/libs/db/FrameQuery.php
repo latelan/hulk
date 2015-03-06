@@ -3,9 +3,94 @@
 /**
  * Description of FrameQuery
  * 数据库crud操作类
+ * for example
+ * ~~~~~~~
+ * 获取query对象
+ * $db = new FrameDB(['dsn'=>'mysql:dbname=testdb;host=127.0.0.1','username'=>'xxx','password'=>'xxxx']);   //db连接对象应采用更合理的单例
+ * $query = new FrameQuery(['db'=>$db]);
+ * 
+ * 单条语句插入：
+ * $res = $query->insert('table',array(
+ *      'id'=>'15',
+ *      'name'=>'zhangjiulong'
+ * ));
+ * return : 影响的行数
+ * 如果要获取最新插入的自增id，可使用 $query->getLastInsertId() 获取
+ * 
+ * 多条语句插入：
+ * $res = $query->batchInsert('table',array('id','name'),array(
+ *      array('16','lisi'),
+ *      array('17','wangwu'),
+ * ));
+ * return: 影响的行数
+ * 
+ * 修改：
+ * $res = $query->update('table',array(
+ *      'name'=>'liuliu'
+ * ),'id=:id',[':id'=>17]);
+ * return: 受影响的行数
+ * 
+ * 删除：
+ * $res = $query->delete('table','id=:id',[':id'=>17]);
+ * return: 返回受影响的行数
+ * 
+ * 查询所有集合(采用单个查询条件)
+ * $res = $query->select('*')->from('table')->where('age>:age',[':age'=>30])->queryAll();
+ * return: 二维关联数组
+ * [
+ *      ['id'=>1,'name'=>'zs','age'=>20],
+ *      ['id'=>2,'name'=>'li','age'=>35],
+ *      ....
+ * ]
+ * 
+ * 查询一条记录（采用多个查询条件）
+ * $res = $query->select('id,name,age')->from('table')->where('age>:age',[':age'=>30])->andWhere('name=:name',[':name'=>'zs'])->queryRow()
+ * return: 一维关联数组
+ * ['id'=>1,'name'=>'zs','age'=>20]
+ * 
+ * 查询一个值
+ * $res = $query->select('count(1)')->from('table')->queryOne();
+ * return: count(1)对应的值 
+ * 10
+ * 
+ * 查询某个字段的集合
+ * $res = $query->select('id')->from('table')->where('id>0')->getColumn();
+ * return: 一维索引数组
+ * [1,2,3,4,5,10]
+ * 
+ * 内联查询
+ * $res = $query->select('a.*,b.*')
+ *              ->from('table_a as a')
+ *              ->join('table_b as b','a.aid=b.bid')
+ *              ->where('a.aid>:aid',[':aid'=>50])
+ *              ->queryAll();
+ * 
+ * 左联查询
+ * $res = $query->select('a.*,b.*')
+ *              ->from('table_a as a')
+ *              ->leftJoin('table_b as b','a.aid=b.bid')
+ *              ->where('a.aid>:aid',[':aid'=>50])
+ *              ->queryAll();
+ * 
+ * 分组使用
+ * $res = $query->select('min(id)')->from('table')->group('age')->queryAll();
+ * 
+ * 排序分页(页大小5,当前页是2，取id大于10的集合，按id倒叙排列)
+ * $page = 2;   $pagesize = 5;
+ * 1. 组装where条件
+ * $query->select('id,name,age')->from('table')->where('id>:id',[':id'=>10])->order('id desc');
+ * 2. 获取总数
+ * $total = $query->count();
+ * 3. 根据页大小设置偏移量
+ * $query->limit($pagesize,$pagesize*($page-1));
+ * 4. 执行查询
+ * $res = $query->queryAll()
+ * (表示取id大于10的集合，按id倒叙排列，取10条，跳过5条)
+ * 
+ * ~~~~~~~~
  * @author zhangjiulong
  */
-class FrameQuery extends FrameObject {
+class FrameQuery {
 
     /**
      *
@@ -30,17 +115,55 @@ class FrameQuery extends FrameObject {
      * @var array 
      */
     public $params = [];
+
+    /**
+     * 实际绑定的参数，在bindValues()中使用
+     * @var type 
+     */
     private $_pendingParams = [];
+
+    /**
+     * sql语句
+     * @var string 
+     */
     private $_sql;
+
+    /**
+     * SQL语句的组装数组
+     * @var array
+     */
     private $_query;
 
-    public function __construct($config = array()) {
-        parent::__construct($config);
-        if ($this->db == null) {
-            $this->db = FrameApp::$app->getDb();
+    /**
+     * 构造函数，实现对象属性的赋值
+     * @param array $config
+     */
+    public function __construct($config = []) {
+        if (!empty($config) && is_array($config)) {
+            if (isset($config['sql'])) {
+                $this->setSql($config['sql']);
+                unset($config['sql']);
+            }
+            foreach ($config as $name => $value) {
+                $this->{$name} = $value;
+            }
         }
+        if ($this->db == null) {
+            //@TODO 获取db的连接单例
+//            $this->db = FrameApp::$app->getDb();
+        }
+        $this->init();
+    }
+    
+    
+    public function init() {
+        
     }
 
+    /**
+     * 返回当前的sql语句（未绑定参数）
+     * @return string
+     */
     public function getSql() {
         if ($this->_sql == '' && !empty($this->_query)) {
             $this->setSql($this->buildQuery($this->_query));
@@ -48,6 +171,10 @@ class FrameQuery extends FrameObject {
         return $this->_sql;
     }
 
+    /**
+     * 实际执行的sql语句(参数绑定后的)
+     * @return string
+     */
     public function getRawSql() {
         if (empty($this->params)) {
             return $this->getSql();
@@ -74,32 +201,46 @@ class FrameQuery extends FrameObject {
         }
     }
 
+    /**
+     * 设置sql语句
+     * @param string $sql
+     * @return \FrameQuery
+     */
     public function setSql($sql) {
         if ($sql !== $this->_sql) {
             $this->cancel();
             $this->_sql = $this->db->quoteSql($sql);
-//            $this->params = [];
         }
         return $this;
     }
 
+    /**
+     * 执行sql
+     * @return int 返回影响的行数
+     * @throws Exception
+     */
     public function execute() {
         $sql = $this->getSql();
         if ($sql == '') {
             return 0;
         }
         $this->prepare();
-        
+
         try {
-//            p($this->getRawSql(), false);
+            //@TODO 此处可记录SQL日志 log($this->getRawSql())
             $this->pdoStatement->execute();
             $n = $this->pdoStatement->rowCount();
             return $n;
         } catch (Exception $e) {
-            throw new ExceptionFrame('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
+            throw new Exception('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
         }
     }
 
+    /**
+     * SQL语句的预处理
+     * @return null
+     * @throws Exception
+     */
     public function prepare() {
         try {
             if ($this->pdoStatement) {
@@ -120,16 +261,23 @@ class FrameQuery extends FrameObject {
              */
             $this->bindPendingParams();
         } catch (Exception $e) {
-            throw new ExceptionFrame('Fail to prepare SQL: ' . $sql . ',' . $e->getMessage(), (int) $e->getCode());
+            throw new Exception('Fail to prepare SQL: ' . $sql . ',' . $e->getMessage(), (int) $e->getCode());
         }
     }
 
+    /**
+     * 取消sql预处理和参数绑定
+     */
     public function cancel() {
         $this->pdoStatement = null;
     }
 
+    /**
+     * 重置Query对象
+     * @return \FrameQuery
+     */
     public function reset() {
-        $this->sql = null;
+        $this->_sql = null;
         $this->_pendingParams = [];
         $this->_query = null;
         $this->params = [];
@@ -137,6 +285,11 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 绑定值
+     * @param array $values
+     * @return \FrameQuery
+     */
     public function bindValues($values) {
         if (empty($values)) {
             return $this;
@@ -154,6 +307,13 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 绑定单个值
+     * @param string $name
+     * @param mixed $value
+     * @param int $dataType
+     * @return \FrameQuery
+     */
     public function bindValue($name, $value, $dataType = null) {
         if ($dataType === null) {
             $dataType = $this->db->getPdoType($value);
@@ -163,6 +323,9 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 执行PDOstatement的参数绑定
+     */
     public function bindPendingParams() {
         foreach ($this->_pendingParams as $name => $value) {
             $this->pdoStatement->bindParam($name, $value[0], $value[1]);
@@ -170,6 +333,12 @@ class FrameQuery extends FrameObject {
         $this->_pendingParams = [];
     }
 
+    /**
+     * 生成sql语句通过$query数组
+     * @param array $query
+     * @return string
+     * @throws Exception
+     */
     public function buildQuery($query) {
         $sql = !empty($query['distinct']) ? 'SELECT DISTINCT' : 'SELECT';
         $sql .= ' ' . (!empty($query['select']) ? $query['select'] : '*');
@@ -204,6 +373,13 @@ class FrameQuery extends FrameObject {
         return $sql;
     }
 
+    /**
+     * 处理sql的偏移量和limit语句
+     * @param string $sql
+     * @param int $limit
+     * @param int $offset
+     * @return string
+     */
     public function applyLimit($sql, $limit, $offset) {
         if ($limit >= 0) {
             $sql .= ' LIMIT ' . (int) $limit;
@@ -214,7 +390,12 @@ class FrameQuery extends FrameObject {
         return $sql;
     }
 
-    //插入单条数据
+    /**
+     * 插入单条数据
+     * @param string $table 表名
+     * @param array $columns [字段=>值]
+     * @return int 影响的行数
+     */
     public function insert($table, $columns) {
         $params = [];
         $names = [];
@@ -234,14 +415,25 @@ class FrameQuery extends FrameObject {
         $sql = 'INSERT INTO ' . $this->db->quoteTableName($table)
                 . ' (' . implode(', ', $names) . ') VALUES ('
                 . implode(', ', $placeholders) . ')';
+        
         return $this->setSql($sql)->bindValues($params)->execute();
     }
 
+    /**
+     * 返回最新插入的一个自增id
+     * @return string
+     */
     public function getLastInsertId() {
         return $this->db->pdo->lastInsertId();
     }
 
-    //批量插入数据
+    /**
+     * 批量插入数据
+     * @param string $table 表名
+     * @param array $columns 字段列表[column1,column2...]
+     * @param array $rows 多行值 [[column1=>value1,column2=>value2],[....]]
+     * @return 影响的行数
+     */
     public function batchInsert($table, $columns, $rows) {
         $values = [];
         foreach ($rows as $row) {
@@ -266,17 +458,17 @@ class FrameQuery extends FrameObject {
 
         $sql = 'INSERT INTO ' . $this->db->quoteTableName($table) .
                 '(' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
-        
+
         return $this->setSql($sql)->bindValues($this->params)->execute();
     }
 
     /**
      * 修改表记录
-     * @param type $table
-     * @param type $columns
-     * @param type $condition
-     * @param type $params
-     * @return type
+     * @param string $table 表名
+     * @param array $columns [字段=>值]
+     * @param string|array $condition 条件表达式
+     * @param array $params 参数
+     * @return int 影响的行数
      */
     public function update($table, $columns, $condition = '', $params = []) {
         $lines = array();
@@ -298,6 +490,13 @@ class FrameQuery extends FrameObject {
         return $this->setSql($sql)->bindValues($params)->execute();
     }
 
+    /**
+     * 删除表记录
+     * @param string $table 表名
+     * @param array|string $condition 条件表达式
+     * @param array $params 待绑定的参数
+     * @return int 影响的行数
+     */
     public function delete($table, $condition = '', $params = []) {
         $sql = 'DELETE FROM ' . $this->db->quoteTableName($table);
         if (($where = $this->processConditions($condition)) != '') {
@@ -306,6 +505,12 @@ class FrameQuery extends FrameObject {
         return $this->setSql($sql)->bindValues($params)->execute();
     }
 
+    /**
+     * 相当于sql中的select语句
+     * @param string|array $columns 字段列表
+     * @param string $option
+     * @return \FrameQuery
+     */
     public function select($columns = '*', $option = '') {
         if (is_string($columns) && strpos($columns, '(') !== false) {
             $this->_query['select'] = $columns;
@@ -330,27 +535,53 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 获取select语句
+     * @return type
+     */
     public function getSelect() {
         return isset($this->_query['select']) ? $this->_query['select'] : '';
     }
 
+    /**
+     * 设置select语句
+     * @param string|array $value
+     */
     public function setSelect($value) {
         $this->select($value);
     }
 
+    /**
+     * 设置select distinct的情况
+     * @param string $columns
+     * @return type
+     */
     public function selectDistinct($columns = '*') {
         $this->_query['distinct'] = true;
         return $this->select($columns);
     }
 
+    /**
+     * 返回是否有distinct
+     * @return string
+     */
     public function getDistinct() {
         return isset($this->_query['distinct']) ? $this->_query['distinct'] : false;
     }
 
+    /**
+     * 设置是否有disctict
+     * @param boolean $value
+     */
     public function setDistinct($value) {
         $this->_query['distinct'] = $value;
     }
 
+    /**
+     * 相当于sql中的from语句
+     * @param string|array $tables 表名
+     * @return \FrameQuery
+     */
     public function from($tables) {
         if (is_string($tables) && strpos($tables, '(') !== false)
             $this->_query['from'] = $tables;
@@ -378,6 +609,11 @@ class FrameQuery extends FrameObject {
         $this->from($value);
     }
 
+    /**
+     * 添加待绑定的参数
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function addParams($params) {
         if (!empty($params)) {
             if (empty($this->params)) {
@@ -402,12 +638,24 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 设置where条件，相当于sql中的where
+     * @param string|array $conditions
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function where($conditions, $params = array()) {
         $this->_query['where'] = $this->processConditions($conditions);
         $this->addParams($params);
         return $this;
     }
 
+    /**
+     * 设置where条件，相当于sql中的and where
+     * @param string|array $conditions
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function andWhere($conditions, $params = array()) {
         if (isset($this->_query['where']))
             $this->_query['where'] = $this->processConditions(array('AND', $this->_query['where'], $conditions));
@@ -418,6 +666,12 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 设置where条件，相当于sql中的or where
+     * @param string|array $conditions
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function orWhere($conditions, $params = array()) {
         if (isset($this->_query['where']))
             $this->_query['where'] = $this->processConditions(array('OR', $this->_query['where'], $conditions));
@@ -436,6 +690,13 @@ class FrameQuery extends FrameObject {
         $this->where($value);
     }
 
+    /**
+     * 内联 join table
+     * @param string $table 表名
+     * @param string $conditions 连接条件
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function join($table, $conditions, $params = array()) {
         return $this->joinInternal('join', $table, $conditions, $params);
     }
@@ -448,14 +709,33 @@ class FrameQuery extends FrameObject {
         $this->_query['join'] = $value;
     }
 
+    /**
+     * 左连接 left join table
+     * @param string $table 表名
+     * @param string $conditions 连接条件
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function leftJoin($table, $conditions, $params = array()) {
         return $this->joinInternal('left join', $table, $conditions, $params);
     }
 
+    /**
+     * 右连接 right join table
+     * @param string $table 表名
+     * @param string $conditions 连接条件
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function rightJoin($table, $conditions, $params = array()) {
         return $this->joinInternal('right join', $table, $conditions, $params);
     }
 
+    /**
+     * 分组 group by column
+     * @param array|string $columns
+     * @return \FrameQuery
+     */
     public function group($columns) {
         if (is_string($columns) && strpos($columns, '(') !== false)
             $this->_query['group'] = $columns;
@@ -481,6 +761,12 @@ class FrameQuery extends FrameObject {
         $this->group($value);
     }
 
+    /**
+     * having语句
+     * @param string|array $conditions
+     * @param array $params
+     * @return \FrameQuery
+     */
     public function having($conditions, $params = array()) {
         $this->_query['having'] = $this->processConditions($conditions);
         $this->addParams($params);
@@ -495,6 +781,11 @@ class FrameQuery extends FrameObject {
         $this->having($value);
     }
 
+    /**
+     * order by 语句
+     * @param string|array $columns
+     * @return \FrameQuery
+     */
     public function order($columns) {
         if (is_string($columns) && strpos($columns, '(') !== false)
             $this->_query['order'] = $columns;
@@ -524,6 +815,12 @@ class FrameQuery extends FrameObject {
         $this->order($value);
     }
 
+    /**
+     * limit语句
+     * @param int $limit 限制的条件
+     * @param int $offset 偏移量
+     * @return \FrameQuery
+     */
     public function limit($limit, $offset = null) {
         $this->_query['limit'] = (int) $limit;
         if ($offset !== null)
@@ -539,6 +836,11 @@ class FrameQuery extends FrameObject {
         $this->limit($value);
     }
 
+    /**
+     * offset语句
+     * @param int $offset 偏移量
+     * @return \FrameQuery
+     */
     public function offset($offset) {
         $this->_query['offset'] = (int) $offset;
         return $this;
@@ -552,6 +854,11 @@ class FrameQuery extends FrameObject {
         $this->offset($value);
     }
 
+    /**
+     * union 语句
+     * @param string $sql
+     * @return \FrameQuery
+     */
     public function union($sql) {
         if (isset($this->_query['union']) && is_string($this->_query['union']))
             $this->_query['union'] = array($this->_query['union']);
@@ -569,6 +876,12 @@ class FrameQuery extends FrameObject {
         $this->_query['union'] = $value;
     }
 
+    /**
+     * 组装条件
+     * @param string|array $conditions
+     * @return string
+     * @throws Exception
+     */
     protected function processConditions($conditions) {
         if (!is_array($conditions)) {
             return $conditions;
@@ -629,9 +942,17 @@ class FrameQuery extends FrameObject {
             }
             return implode($andor, $expressions);
         }
-        throw new ExceptionFrame('unknow operator: ' . $operator);
+        throw new Exception('unknow operator: ' . $operator);
     }
 
+    /**
+     * 组装连接语句
+     * @param string $type 连接类型
+     * @param string $table 表名
+     * @param string|array $conditions 连接条件
+     * @param array $params 参数绑定
+     * @return \FrameQuery
+     */
     private function joinInternal($type, $table, $conditions = '', $params = array()) {
         if (strpos($table, '(') === false) {
             if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $table, $matches))  // with alias
@@ -653,22 +974,42 @@ class FrameQuery extends FrameObject {
         return $this;
     }
 
+    /**
+     * 返回PDOstatement对象
+     * @return PDOStatement
+     */
     public function query() {
         return $this->queryInternal('', 0);
     }
 
-    public function queryAll($fetchAssociative = true) {
-        return $this->queryInternal('fetchAll', $fetchAssociative ? $this->fetchMode : PDO::FETCH_NUM);
+    /**
+     * 返回多行数据
+     * @return array
+     */
+    public function queryAll() {
+        return $this->queryInternal('fetchAll');
     }
 
+    /**
+     * 返回一列数据
+     * @return array
+     */
     public function queryColumn() {
         return $this->queryInternal('fetchAll', PDO::FETCH_COLUMN);
     }
 
+    /**
+     * 返回一行数据
+     * @return array
+     */
     public function queryRow() {
         return $this->queryInternal('fetch');
     }
 
+    /**
+     * 返回第一行第一列
+     * @return string
+     */
     public function queryOne() {
         $result = $this->queryInternal('fetchColumn', 0);
         if (is_resource($result) && get_resource_type($result) === 'stream') {
@@ -678,12 +1019,22 @@ class FrameQuery extends FrameObject {
         }
     }
 
+    /**
+     * 执行查询
+     * @param string $method 查询类型
+     * @param 返回的数据结构 $fetchMode
+     * @return mixed
+     * @throws Exception
+     */
     private function queryInternal($method, $fetchMode = null) {
-        //@todo
+        //绑定参数
         $this->bindValues($this->params);
+        /**
+         * 预处理
+         */
         $this->prepare();
         try {
-//            print($this->getRawSql());
+            //@TODO 此处记录查询语句 log($this->getRawSql())
             $this->pdoStatement->execute();
             if ($method == '') {
                 return $this->pdoStatement;
@@ -696,20 +1047,20 @@ class FrameQuery extends FrameObject {
                 return $result;
             }
         } catch (Exception $e) {
-            throw new ExceptionFrame('Query fail:' . $e->getMessage(), (int) $e->getCode());
+            throw new Exception('Query fail:' . $e->getMessage(), (int) $e->getCode());
         }
     }
 
     /**
      * 根据query对象获取总条数
-     * @param Query $query
      * @return int
      */
     public function count() {
         $cloneQuery = clone $this;
-        $cloneQuery->limit = $cloneQuery->offset = -1;
-
-        if (!empty($cloneQuery->group) || !empty($cloneQuery->having)) {
+        $cloneQuery->limit(-1, -1);
+        $group = $cloneQuery->getGroup();
+        $having = $cloneQuery->getHaving();
+        if (!empty($group) || !empty($having)) {
             $cloneQuery->order('');
             $sql = $cloneQuery->getSql();
             $sql = "SELECT COUNT(*) FROM ({$sql}) sq";
@@ -717,8 +1068,11 @@ class FrameQuery extends FrameObject {
             return $cloneQuery->queryOne();
         } else {
             $cloneQuery->select("COUNT(*)");
-            $cloneQuery->order = $cloneQuery->group = $cloneQuery->having = '';
+            $cloneQuery->order(''); ;
+            $cloneQuery->group('');
+            $cloneQuery->having('');
             return $cloneQuery->queryOne();
         }
     }
+
 }
