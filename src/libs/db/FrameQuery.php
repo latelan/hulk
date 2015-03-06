@@ -299,7 +299,7 @@ class FrameQuery extends FrameObject{
         if ($dataType === null) {
             $dataType = $this->db->getPdoType($value);
         }
-        $this->_pendingParams[$name] = [$value, $type];
+        $this->_pendingParams[$name] = [$value, $dataType];
         $this->params[$name] = $value;
         return $this;
     }
