@@ -90,7 +90,7 @@
  * ~~~~~~~~
  * @author zhangjiulong
  */
-class FrameQuery {
+class FrameQuery extends FrameObject{
 
     /**
      *
@@ -134,32 +134,13 @@ class FrameQuery {
      */
     private $_query;
 
-    /**
-     * 构造函数，实现对象属性的赋值
-     * @param array $config
-     */
-    public function __construct($config = []) {
-        if (!empty($config) && is_array($config)) {
-            if (isset($config['sql'])) {
-                $this->setSql($config['sql']);
-                unset($config['sql']);
-            }
-            foreach ($config as $name => $value) {
-                $this->{$name} = $value;
-            }
-        }
+    public function __construct($config = array()) {
+        parent::__construct($config);
         if ($this->db == null) {
-            //@TODO 获取db的连接单例
-//            $this->db = FrameApp::$app->getDb();
+            $this->db = FrameApp::$app->getDb();
         }
-        $this->init();
     }
     
-    
-    public function init() {
-        
-    }
-
     /**
      * 返回当前的sql语句（未绑定参数）
      * @return string
@@ -297,7 +278,7 @@ class FrameQuery {
         foreach ($values as $name => $value) {
             if (is_array($value)) {
                 $this->_pendingParams[$name] = $value;
-                $this->params[$name] = $value[0];
+                $this->params[$name] = $value;
             } else {
                 $type = $this->db->getPdoType($value);
                 $this->_pendingParams[$name] = [$value, $type];

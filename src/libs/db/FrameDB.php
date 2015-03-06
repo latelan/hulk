@@ -5,7 +5,7 @@
  * 数据库链接
  * @author zhangjiulong
  */
-class FrameDB {
+class FrameDB extends FrameObject {
 
     /**
      * 数据源名称或叫做 DSN，包含了请求连接到数据库的信息。 
@@ -14,13 +14,13 @@ class FrameDB {
      * @var string 
      */
     public $dsn;
-    
+
     /**
      * DSN字符串中的用户名
      * @var string
      */
     public $username;
-    
+
     /**
      * DSN字符串中的密码
      * @var string 
@@ -33,7 +33,7 @@ class FrameDB {
      * @var array 
      */
     public $atttibutes;
-    
+
     /**
      * 数据库的字符集
      * @var string
@@ -45,43 +45,41 @@ class FrameDB {
      * @var PDO
      */
     public $pdo;
+
     /**
      * PDO对象的类名，可扩展为原声PDO的子类对象
      * @var type 
      */
     public $pdoClass = 'PDO';
-    
+
     /**
      * 表前缀或者表后缀
      * @var string 
      */
     public $tablePrefix = '';
-    
+
     /**
      * 驱动名称 mysql|mssql等
      * @var string
      */
     private $_driverName;
-    
+
     /**
      * 事务对象
      * @var FrameTransaction 
      */
     private $_transaction;
-    
+
     /**
-     * 构造函数，实现对象属性的赋值
-     * @param array $config
+     * 
+     * @param string $id 容器中FrameDB对应的类ID标示
+     * @param boolean $throwException
+     * @return FrameDB
      */
-    public function __construct($config = []) {
-        if(!empty($config) && is_array($config)){
-            foreach ($config as $name => $value) {
-                $this->{$name} = $value;
-            }
-        }
-        $this->init();
+    public static function di($id = 'db', $throwException = true) {
+        return parent::di($id, $throwException);
     }
-    
+
     /**
      * 获取数据库链接是否已经建立
      * @return boolean 链接建立成功返回true
@@ -89,8 +87,9 @@ class FrameDB {
     public function getIsActive() {
         return $this->pdo !== null;
     }
-    
+
     public function init() {
+        parent::init();
         //默认自动打开
         $this->open();
     }
@@ -307,4 +306,5 @@ class FrameDB {
         ]);
         return $query->bindValues($params);
     }
+
 }

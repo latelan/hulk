@@ -58,7 +58,7 @@
  * ~~~~~~
  * @author zhangjiulong
  */
-abstract class FrameDao {
+abstract class FrameDao extends FrameObject{
     
     /**
      * 返回的是FrameQuery的对象实例
