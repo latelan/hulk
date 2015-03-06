@@ -5,19 +5,36 @@
  * 数据库事务类
  * @author zhangjiulong
  */
-class FrameTransaction extends FrameObject {
+class FrameTransaction {
 
     /**
      * 数据库链接类
      * @var FrameDB
      */
     public $db;
-    
+
     /**
      * 事务的层级，用来控制多层事务嵌套
      * @var type 
      */
     private $_level = 0;
+
+    /**
+     * 构造函数，实现对象属性的赋值
+     * @param array $config
+     */
+    public function __construct($config = []) {
+        if (!empty($config) && is_array($config)) {
+            foreach ($config as $name => $value) {
+                $this->{$name} = $value;
+            }
+        }
+        $this->init();
+    }
+    
+    public function init() {
+        
+    }
 
     public function getIsActive() {
         return $this->_level > 0 && $this->db && $this->db->getIsActive();
@@ -50,7 +67,7 @@ class FrameTransaction extends FrameObject {
             throw new Exception('Fail to commint transaction: transaction was inactive.');
         }
         $this->_level--;
-        
+
         //@TODO log
         if ($this->_level == 0) {
             $this->db->pdo->commit();
@@ -74,7 +91,6 @@ class FrameTransaction extends FrameObject {
         }
 
         throw new Exception('the inner transaction error!');
-        
     }
 
 }
