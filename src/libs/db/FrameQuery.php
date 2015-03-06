@@ -87,6 +87,14 @@
  * $res = $query->queryAll()
  * (表示取id大于10的集合，按id倒叙排列，取10条，跳过5条)
  * 
+ * where条件的使用
+ * in | not in 查询场景
+ * where(['in',$column,$values]) //参数为一个数组，第一个值为in|IN|not in|NOT IN,第二个值$column为in查询的字段名，第三个值$values是in条件的数组
+ * like查询场景
+ * where(['like',$column,'%'.$value.'%']) //参数为一个数组，第一个值为like|LIKE,第二个值$column为like查询的字段名，第三个值$value是like条件
+ * > | >= | < | <= | = 比较的条件
+ * where('id>:id',[':id'=>10]); //比较条件与sql写法一致
+ * 
  * ~~~~~~~~
  * @author zhangjiulong
  */
