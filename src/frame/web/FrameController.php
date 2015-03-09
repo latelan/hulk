@@ -7,8 +7,22 @@
  */
 class FrameController extends FrameObject {
 
+    /**
+     * 当前的控制器名称
+     * @var string 
+     */
     public $id;
+    
+    /**
+     * 默认的Action名称
+     * @var string 
+     */
     public $defaultAction = 'index';
+    
+    /**
+     * 当前的action名称
+     * @var string
+     */
     public $actionId;
     public $actionParams = [];
 

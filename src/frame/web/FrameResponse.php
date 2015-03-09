@@ -17,6 +17,11 @@ class FrameResponse extends FrameObject {
      * @var string
      */
     public $content;
+    
+    /**
+     * 头信息
+     * @var string 
+     */
     private $_headers = [];
     /**
      * 是否已发送

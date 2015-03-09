@@ -9,7 +9,7 @@ try {
     $app->run();
     exit(0);
 } catch (Exception $e) {
-    echo $app->console->ansiFormat($e->getMessage(), [FrameConsole::FG_RED]);
+    echo FrameConsole::ansiFormat($e->getMessage(), [FrameConsole::FG_RED]);
 //    echo $e->getMessage();
     exit(1);
 }

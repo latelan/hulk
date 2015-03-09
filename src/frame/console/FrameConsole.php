@@ -147,20 +147,19 @@ class FrameConsole extends FrameObject {
         $help = 'Usage: php ' . $this->getScriptName() . ' ' . $this->id;
         $options = $this->getOptionHelp();
         if (empty($options)) {
-            echo $this->ansiFormat($help . "\n", [static::BOLD, static::FG_GREEN]);
+            echo static::ansiFormat($help . "\n", [static::BOLD, static::FG_GREEN]);
             return;
         }
         if (count($options) == 1) {
-            echo $this->ansiFormat($help . '/' . $options[0] . "\n", [static::BOLD, static::FG_GREEN]);
+            echo static::ansiFormat($help . '/' . $options[0] . "\n", [static::BOLD, static::FG_GREEN]);
             return;
         }
         $help.= "/<action>\n";
-        $help = $this->ansiFormat($help, [static::BOLD, static::FG_GREEN]);
+        $help = static::ansiFormat($help, [static::BOLD, static::FG_GREEN]);
         $actionstr = "Actions:\n";
         foreach ($options as $option) {
             $actionstr .= '      ' . $option . "\n";
         }
-//        $actionstr = $this->ansiFormat($actionstr);
         echo $help . $actionstr;
     }
 
@@ -212,7 +211,7 @@ class FrameConsole extends FrameObject {
      * FrameConsole::ansiFormat('hello,world',[FrameConsole::FG_RED,FrameConsole::BG_GREY,FrameConsole::BOLD])
      * @return string
      */
-    public function ansiFormat($string, $color = []) {
+    static public function ansiFormat($string, $color = []) {
         $code = implode(';', $color);
         $string = (is_scalar($string) && !is_bool($string)) ? $string : var_export($string, true);
         $res = "\033[0m" . ($code !== '' ? "\033[" . $code . "m" : '') . $string . "\033[0m";

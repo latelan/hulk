@@ -7,10 +7,34 @@
  */
 class FrameRequest extends FrameObject {
 
+    /**
+     * PATHINFO
+     * @var string
+     */
     private $_pathInfo;
+
+    /**
+     * 当前Url
+     * @var string 
+     */
     private $_url;
+
+    /**
+     * 入口脚本的url
+     * @var string
+     */
     private $_scriptUrl;
+
+    /**
+     * 入口文件的路径
+     * @var string 
+     */
     private $_scriptFile;
+
+    /**
+     * 基本url，不含入口文件
+     * @var string
+     */
     private $_baseUrl;
 
     public function getRequest($name = null, $default = null) {
@@ -36,19 +60,6 @@ class FrameRequest extends FrameObject {
             return $_POST;
         }
         return isset($_POST[$name]) ? $_POST[$name] : $default;
-    }
-
-    public function stripSlashes(&$data) {
-        if (is_array($data)) {
-            if (count($data) == 0) {
-                return $data;
-            }
-            $keys = array_map('stripslashes', $data);
-            $data = array_combine($keys, array_values($data));
-            return array_map(array($this, 'stripSlashes'), $data);
-        } else {
-            return stripslashes($data);
-        }
     }
 
     /**

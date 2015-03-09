@@ -2,10 +2,10 @@
 
 /**
  * Description of FrameApp
- * Frame的应用类
+ * Frame的应用基类
  * @author zhangjiulong
  */
-class FrameApp extends FrameDI {
+abstract class FrameApp extends FrameDI {
 
     /**
      * 线上生产环境
@@ -65,14 +65,26 @@ class FrameApp extends FrameDI {
     public $startTime;
     
 
+    /**
+     * 初始化应用
+     * @param array $config 应用的配置数组
+     */
     public function __construct($config) {
-        
+        /**
+         * 将应用的实例赋值给$app静态属性，项目中可以使用FrameApp::$app获取当前应用
+         */
         static::$app = $this;
         
+        /**
+         * 对配置文件进行预处理
+         */
         $config = $this->preInit($config);
         
         parent::__construct($config);
         
+        /**
+         * 注册脚本结束时执行的代码到FrameApp::end()方法
+         */
         register_shutdown_function([$this, 'end']);
     }
 
@@ -203,6 +215,8 @@ class FrameApp extends FrameDI {
         return $response;
     }
     
+    
+    abstract protected function handleRequest($request);
     
     /**
      * 返回脚本执行到当前花费的毫秒数

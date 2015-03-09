@@ -10,6 +10,6 @@ class HomeConsole extends FrameConsole{
     public function helloAction($word='world') {
 //        var_dump(FrameApp::$app->debug);
         $str= 'hello,'.$word.'!';
-        echo $this->ansiFormat($str, [FrameConsole::FG_RED,FrameConsole::BG_GREY,FrameConsole::BOLD]);
+        echo static::ansiFormat($str, [FrameConsole::FG_RED,FrameConsole::BG_GREY,FrameConsole::BOLD]);
     }
 }
