@@ -95,6 +95,17 @@
  * > | >= | < | <= | = 比较的条件
  * where('id>:id',[':id'=>10]); //比较条件与sql写法一致
  * 
+ * 事务操作($db是FrameDB的实例,一般在DI中获取，FrameDB::di())
+ * $trans = $db->beginTransaction();
+ * try{
+ *      $db->createQuery()->insert($table,$columns);
+ *      $db->createQuery()->insert($table,$columns);
+ *      ....
+ *      $trans->commit();
+ * }catch(Exception $e){
+ *      echo $e->getMessage();
+ *      $trans->rollback();
+ * }
  * ~~~~~~~~
  * @author zhangjiulong
  */

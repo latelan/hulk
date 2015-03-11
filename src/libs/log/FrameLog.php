@@ -46,13 +46,13 @@ class FrameLog extends FrameObject {
         static::di()->log($message, static::LEVEL_INFO, $category);
     }
 
-    static public function error($message, $category = 'error') {
-        static::di()->log($message, static::LEVEL_ERROR, $category);
+    static public function error($message, $category = 'app') {
+        static::di()->log($message, static::LEVEL_ERROR, $category.'.error');
     }
 
-    static public function debug($message, $category = 'debug') {
+    static public function debug($message, $category = 'app') {
         if(FrameApp::$app->debug){
-            static::di()->log($message, static::LEVEL_DEBUG, $category);
+            static::di()->log($message, static::LEVEL_DEBUG, $category.'.debug');
         }
     }
 
