@@ -5,37 +5,49 @@
  * 数据库crud操作类
  * for example
  * ~~~~~~~
- * 获取query对象
+ * 特别说明，query对象绑定参数值支持:param=$value的方式，不支持"?"绑定方式
+ * 
+ * 表user：
+ * CREATE TABLE `user` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL DEFAULT '',
+    `age` tinyint(3) unsigned NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ * 
+ * 获取Db数据库连接对象和query对象
  * $db = new FrameDB(['dsn'=>'mysql:dbname=testdb;host=127.0.0.1','username'=>'xxx','password'=>'xxxx']);   //db连接对象应采用更合理的单例
  * $query = new FrameQuery(['db'=>$db]);
  * 
- * 单条语句插入：
- * $res = $query->insert('table',array(
- *      'id'=>'15',
- *      'name'=>'zhangjiulong'
+ * 单条语句插入：INSERT INTO `user` (`name`, `age`) VALUES ('zhangjiulong', 3)
+ * $res = $query->insert('user',array(
+ *      'name'=>'zhangjiulong',
+ *      'age'=>3
  * ));
  * return : 影响的行数
  * 如果要获取最新插入的自增id，可使用 $query->getLastInsertId() 获取
  * 
- * 多条语句插入：
- * $res = $query->batchInsert('table',array('id','name'),array(
- *      array('16','lisi'),
- *      array('17','wangwu'),
+ * 多条语句插入：INSERT INTO `user`(`name`, `age`) VALUES ('lisi', 13), ('wangwu', 17)
+ * $res = $query->batchInsert('user', array('name', 'age'), array(
+ *      array('lisi','13'),
+ *      array('wangwu',17),
  * ));
  * return: 影响的行数
  * 
- * 修改：
- * $res = $query->update('table',array(
- *      'name'=>'liuliu'
- * ),'id=:id',[':id'=>17]);
+ * 
+ * 修改：UPDATE `user` SET `name`='zhangsanfeng' WHERE `id`=33
+ * $res = $query->update('user', ['name'=>'zhangsanfeng'], ['id'=>33]);
  * return: 受影响的行数
+ * 注：update方法的第三个参数为条件表达式，支持多种用法，详见下文的`条件表达式`具体使用方法
  * 
- * 删除：
- * $res = $query->delete('table','id=:id',[':id'=>17]);
+ * 删除：DELETE FROM `user` WHERE `id`=34 
+ * $res = $query->delete('user',['id'=>34]);
  * return: 返回受影响的行数
+ * 注：delete方法的第二个参数为条件表达式，支持多种用法，详见下文的`条件表达式`具体使用方法
  * 
- * 查询所有集合(采用单个查询条件)
- * $res = $query->select('*')->from('table')->where('age>:age',[':age'=>30])->queryAll();
+ * 
+ * 查询所有集合(采用单个查询条件)  SELECT * FROM `user` WHERE age>18
+ * $res = $query->select('*')->from('user')->where('age>:age',[':age'=>18])->queryAll();
  * return: 二维关联数组
  * [
  *      ['id'=>1,'name'=>'zs','age'=>20],
@@ -43,42 +55,43 @@
  *      ....
  * ]
  * 
- * 查询一条记录（采用多个查询条件）
- * $res = $query->select('id,name,age')->from('table')->where('age>:age',[':age'=>30])->andWhere('name=:name',[':name'=>'zs'])->queryRow()
+ * 查询一条记录（采用多个查询条件） SELECT `id`, `name`, `age` FROM `user` WHERE (age>=18) AND (`name` LIKE '%zjl%')
+ * $res = $query->select('id,name,age')->from('user')->where('age>=:age',[':age'=>18])->andWhere(['like','name','%zjl%'])->queryRow();
  * return: 一维关联数组
  * ['id'=>1,'name'=>'zs','age'=>20]
  * 
- * 查询一个值
- * $res = $query->select('count(1)')->from('table')->queryOne();
+ * 查询一个值 SELECT count(1) FROM `user`
+ * $res = $query->select('count(1)')->from('user')->queryOne();
  * return: count(1)对应的值 
  * 10
  * 
- * 查询某个字段的集合
- * $res = $query->select('id')->from('table')->where('id>0')->getColumn();
+ * 查询某个字段的集合 SELECT `id` FROM `user` WHERE id>5
+ * $res = $query->select('id')->from('user')->where('id>:id',[':id'=>5])->queryColumn();
  * return: 一维索引数组
  * [1,2,3,4,5,10]
  * 
- * 内联查询
- * $res = $query->select('a.*,b.*')
- *              ->from('table_a as a')
- *              ->join('table_b as b','a.aid=b.bid')
- *              ->where('a.aid>:aid',[':aid'=>50])
- *              ->queryAll();
+ * 内联查询 SELECT `a`.*, `b`.* FROM `user` `a` JOIN `time` `b` ON a.id=b.uid WHERE `a`.`id`=5
+    $res = $query->select('a.*,b.utime')
+       ->from('user as a')
+       ->join('time as b', 'a.id=b.uid')
+       ->where(['a.id'=>5])
+       ->queryAll();
  * 
- * 左联查询
- * $res = $query->select('a.*,b.*')
- *              ->from('table_a as a')
- *              ->leftJoin('table_b as b','a.aid=b.bid')
- *              ->where('a.aid>:aid',[':aid'=>50])
- *              ->queryAll();
+ * 左联查询 SELECT `a`.*, `b`.`name` FROM `user` `a` LEFT JOIN `time` `b` ON a.id=b.uid WHERE (a.id>=5) AND (a.id<=10)
+    $res = $query->select('a.*,b.name')
+        ->from('user as a')
+        ->leftJoin('time as b', 'a.id=b.uid')
+        ->where('a.id>=:id',[':id'=>5])
+        ->andWhere('a.id<=:lid',[':lid'=>10])
+        ->queryAll();
  * 
- * 分组使用
- * $res = $query->select('min(id)')->from('table')->group('age')->queryAll();
+ * 分组使用 SELECT min(id),age FROM `user` GROUP BY `age`
+ * $res = $query->select('min(id),age')->from('user')->group('age')->queryAll();
  * 
  * 排序分页(页大小5,当前页是2，取id大于10的集合，按id倒叙排列)
  * $page = 2;   $pagesize = 5;
  * 1. 组装where条件
- * $query->select('id,name,age')->from('table')->where('id>:id',[':id'=>10])->order('id desc');
+ * $query->select('id,name,age')->from('user')->where('id>:id',[':id'=>10])->order('id desc');
  * 2. 获取总数
  * $total = $query->count();
  * 3. 根据页大小设置偏移量
@@ -87,17 +100,51 @@
  * $res = $query->queryAll()
  * (表示取id大于10的集合，按id倒叙排列，取10条，跳过5条)
  * 
- * where条件的使用
- * in | not in 查询场景
- * where(['in',$column,$values]) //参数为一个数组，第一个值为in|IN|not in|NOT IN,第二个值$column为in查询的字段名，第三个值$values是in条件的数组
- * like查询场景
- * where(['like',$column,'%'.$value.'%']) //参数为一个数组，第一个值为like|LIKE,第二个值$column为like查询的字段名，第三个值$value是like条件
- * > | >= | < | <= | = 比较的条件
- * where('id>:id',[':id'=>10]); //比较条件与sql写法一致
+ * 条件表达式 where andWhere orWhere delete update中使用
+ * 总体来说，分为3种使用情况,以where($condition,$params)为例
+ * 1.键值对数组
+ * where(['id'=>3])                 =======>  where id=3
+ * where(['id'=>3,'name'=>'zjl'])   =======>  where id=3 and name='zjl'
+ * where(['id'=>[3,4,5],'name'=>'zjl'])  ====> where id in (3,4,5) and name='zjl'
+ * 
+ * 2.字符串参数
+ * where('id>:id',[':id'=>3])      ========>  where id>3
+ * where('id=:id',[':id'=>3])      ========>  where id=3
+ * where('name like :name and id>:id',[':name'=>'%zjl%',':id'=>3])  =======> where id=3 and name like "%zjl%"
+ * 
+ * 3.索引数组（索引数组包含三个值,第一个值是操作符IN|NOT IN|LIKE|AND|OR,第二个值是一个字段或者一个表达式，第三个值为字段对应的值或者另一个表达式）
+ * where(['IN','id',[3,4,5]])           =====>  where id in (3,4,5)
+ * where(['NOT IN','id',[3,4,5]])       =====>  where id not in (3,4,5)
+ * where(['LIKE','name','%zjl%'])       =====>  where name like "%zjl%"
+ * where(['AND',['id'=>3],'name=:name'],[':name'=>'zjl'])       ===> where id=3 and name="zjl"
+ * where(['OR','id>:id',['NOT IN','id',[7,8]],[':id'=>3])        ===> where id>3 or id not in (7,8)
+ * 
+ * 事务操作($db是FrameDB的实例)
+ * $trans = $db->beginTransaction();        //$trans为FrameTransaction对象实例
+ * try{
+ *      $db->createQuery()->insert($table,$columns);
+ *      $db->createQuery()->insert($table,$columns);
+ *      ....
+ *      $trans->commit();
+ * }catch(Exception $e){
+ *      echo $e->getMessage();
+ *      $trans->rollback();
+ * }
+ * 
+ * 直接写原生sql
+ * $query = $db->createQuery($sql);
+ * //直接执行execute，返回影响函数
+ * $query->execute(); 
+ * //或者执行query系列操作，返回结果集
+ * $query->queryAll();
+ * 
+ * 
  * ~~~~~~~~
  * @author zhangjiulong
  */
 class FrameQuery {
+
+    const PARAM_PREFIX = ':ZJL9';
 
     /**
      *
@@ -161,8 +208,7 @@ class FrameQuery {
         }
         $this->init();
     }
-    
-    
+
     public function init() {
         
     }
@@ -196,15 +242,7 @@ class FrameQuery {
                     $params[$name] = $value;
                 }
             }
-            if (isset($params[1])) {
-                $sql = '';
-                foreach (explode('?', $this->getSql()) as $i => $part) {
-                    $sql .= (isset($params[$i]) ? $params[$i] : '') . $part;
-                }
-                return $sql;
-            } else {
-                return strtr($this->getSql(), $params);
-            }
+            return strtr($this->getSql(), $params);
         }
     }
 
@@ -222,7 +260,7 @@ class FrameQuery {
     }
 
     /**
-     * 执行sql
+     * 执行sql 增删改操作执行此方法
      * @return int 返回影响的行数
      * @throws Exception
      */
@@ -297,18 +335,17 @@ class FrameQuery {
      * @param array $values
      * @return \FrameQuery
      */
-    public function bindValues($values) {
-        if (empty($values)) {
-            return $this;
+    public function bindValues($values = []) {
+        if(!empty($values)){
+            $this->params = array_merge($this->params, $values);
         }
-        foreach ($values as $name => $value) {
+        
+        foreach ($this->params as $name => $value) {
             if (is_array($value)) {
                 $this->_pendingParams[$name] = $value;
-                $this->params[$name] = $value;
             } else {
                 $type = $this->db->getPdoType($value);
                 $this->_pendingParams[$name] = [$value, $type];
-                $this->params[$name] = $value;
             }
         }
         return $this;
@@ -404,26 +441,23 @@ class FrameQuery {
      * @return int 影响的行数
      */
     public function insert($table, $columns) {
-        $params = [];
         $names = [];
         $placeholders = [];
         foreach ($columns as $name => $value) {
             $names[] = $this->db->quoteColumnName($name);
             if ($value instanceof FrameDbExpression) {
                 $placeholders[] = $value->expression;
-                foreach ($value->params as $n => $v) {
-                    $params[$n] = $v;
-                }
+                $this->addParams($value->params);
             } else {
                 $placeholders[] = ':' . $name;
-                $params[':' . $name] = $value;
+                $this->addParams([":$name"=>$value]);
             }
         }
         $sql = 'INSERT INTO ' . $this->db->quoteTableName($table)
                 . ' (' . implode(', ', $names) . ') VALUES ('
                 . implode(', ', $placeholders) . ')';
-        
-        return $this->setSql($sql)->bindValues($params)->execute();
+
+        return $this->setSql($sql)->bindValues()->execute();
     }
 
     /**
@@ -444,15 +478,16 @@ class FrameQuery {
     public function batchInsert($table, $columns, $rows) {
         $values = [];
         foreach ($rows as $row) {
-            $vs = array();
+            $vs = [];
             foreach ($row as $i => $value) {
-                if (is_string($value)) {
-                    $this->addParams([$value]);
-                    $value = '?';
-                } elseif ($value === false) {
-                    $value = 0;
-                } elseif ($value === null) {
+                if($value===null){
                     $value = 'NULL';
+                }elseif($value===false){
+                    $value = 0;
+                }else{
+                    $phName = self::PARAM_PREFIX.count($this->params);
+                    $this->addParams(["$phName"=>$value]);
+                    $value = "$phName";
                 }
                 $vs[] = $value;
             }
@@ -466,7 +501,7 @@ class FrameQuery {
         $sql = 'INSERT INTO ' . $this->db->quoteTableName($table) .
                 '(' . implode(', ', $columns) . ') VALUES ' . implode(', ', $values);
 
-        return $this->setSql($sql)->bindValues($this->params)->execute();
+        return $this->setSql($sql)->bindValues()->execute();
     }
 
     /**
@@ -482,16 +517,14 @@ class FrameQuery {
         foreach ($columns as $name => $value) {
             if ($value instanceof FrameDbExpression) {
                 $lines[] = $this->db->quoteColumnName($name) . '=' . $value->expression;
-                foreach ($value->params as $n => $v) {
-                    $params[$n] = $v;
-                }
+                $this->addParams($value->params);
             } else {
                 $lines[] = $this->db->quoteColumnName($name) . '=:' . $name;
-                $params[':' . $name] = $value;
+                $this->addParams([":$name"=>$value]);
             }
         }
         $sql = 'UPDATE ' . $this->db->quoteTableName($table) . ' SET ' . implode(', ', $lines);
-        if (($where = $this->processConditions($condition)) != '') {
+        if (($where = $this->buildCondition($condition)) != '') {
             $sql .= ' WHERE ' . $where;
         }
         return $this->setSql($sql)->bindValues($params)->execute();
@@ -506,7 +539,7 @@ class FrameQuery {
      */
     public function delete($table, $condition = '', $params = []) {
         $sql = 'DELETE FROM ' . $this->db->quoteTableName($table);
-        if (($where = $this->processConditions($condition)) != '') {
+        if (($where = $this->buildCondition($condition)) != '') {
             $sql .= ' WHERE ' . $where;
         }
         return $this->setSql($sql)->bindValues($params)->execute();
@@ -617,28 +650,20 @@ class FrameQuery {
     }
 
     /**
-     * 添加待绑定的参数
+     * 添加待绑定的参数 只支持:pl=>val的绑定方式
      * @param array $params
      * @return \FrameQuery
      */
-    public function addParams($params) {
+    public function addParams(array $params) {
         if (!empty($params)) {
             if (empty($this->params)) {
-                //@TODO ?参数的绑定
-                if (isset($params[0])) {
-                    foreach ($params as $i => $value) {
-                        $this->params[$i + 1] = $value;
-                    }
-                } else {
-                    $this->params = $params;
+                if(isset($params[0]) || isset($params[1])){
+                    throw new Exception('Not support the placeholder "?"');
                 }
+                $this->params = $params;
             } else {
                 foreach ($params as $name => $value) {
-                    if (is_integer($name)) {
-                        $this->params[] = $value;
-                    } else {
-                        $this->params[$name] = $value;
-                    }
+                    $this->params[$name] = $value;
                 }
             }
         }
@@ -651,8 +676,8 @@ class FrameQuery {
      * @param array $params
      * @return \FrameQuery
      */
-    public function where($conditions, $params = array()) {
-        $this->_query['where'] = $this->processConditions($conditions);
+    public function where($conditions, $params = []) {
+        $this->_query['where'] = $this->buildCondition($conditions);
         $this->addParams($params);
         return $this;
     }
@@ -665,9 +690,9 @@ class FrameQuery {
      */
     public function andWhere($conditions, $params = array()) {
         if (isset($this->_query['where']))
-            $this->_query['where'] = $this->processConditions(array('AND', $this->_query['where'], $conditions));
+            $this->_query['where'] = $this->buildCondition(array('AND', $this->_query['where'], $conditions));
         else
-            $this->_query['where'] = $this->processConditions($conditions);
+            $this->_query['where'] = $this->buildCondition($conditions);
 
         $this->addParams($params);
         return $this;
@@ -681,9 +706,9 @@ class FrameQuery {
      */
     public function orWhere($conditions, $params = array()) {
         if (isset($this->_query['where']))
-            $this->_query['where'] = $this->processConditions(array('OR', $this->_query['where'], $conditions));
+            $this->_query['where'] = $this->buildCondition(array('OR', $this->_query['where'], $conditions));
         else
-            $this->_query['where'] = $this->processConditions($conditions);
+            $this->_query['where'] = $this->buildCondition($conditions);
 
         $this->addParams($params);
         return $this;
@@ -775,7 +800,7 @@ class FrameQuery {
      * @return \FrameQuery
      */
     public function having($conditions, $params = array()) {
-        $this->_query['having'] = $this->processConditions($conditions);
+        $this->_query['having'] = $this->buildCondition($conditions);
         $this->addParams($params);
         return $this;
     }
@@ -884,6 +909,44 @@ class FrameQuery {
     }
 
     /**
+     * 组装sql的条件表达式
+     * @param string|array $conditions
+     */
+    protected function buildCondition($conditions) {
+        if (!is_array($conditions)) {
+            return $conditions;
+        } elseif ($conditions === array()) {
+            return '';
+        }
+        if (isset($conditions[0])) {
+            return $this->processConditions($conditions);
+        } else {
+            return $this->buildHashCondition($conditions);
+        }
+    }
+
+    protected function buildHashCondition($conditions) {
+        $parts = [];
+        foreach ($conditions as $column => $value) {
+            if (is_array($value)) {
+                $parts[] = $this->processConditions(['IN', $column, $value]);
+            } else {
+                if (strpos($column, '(') === false) {
+                    $column = $this->db->quoteColumnName($column);
+                }
+                if ($value === null) {
+                    $parts[] = "$column IS NULL";
+                } else {
+                    $phName = static::PARAM_PREFIX . count($this->params);
+                    $parts[] = "$column=$phName";
+                    $this->addParams([$phName => $value]);
+                }
+            }
+        }
+        return count($parts) === 1 ? $parts[0] : '(' . implode(') AND (', $parts) . ')';
+    }
+
+    /**
      * 组装条件
      * @param string|array $conditions
      * @return string
@@ -900,7 +963,7 @@ class FrameQuery {
         if ($operator === 'OR' || $operator === 'AND') {
             $parts = array();
             for ($i = 1; $i < $n; ++$i) {
-                $condition = $this->processConditions($conditions[$i]);
+                $condition = $this->buildCondition($conditions[$i]);
                 if ($condition !== '') {
                     $parts[] = '(' . $condition . ')';
                 }
@@ -924,11 +987,9 @@ class FrameQuery {
                 return $operator === 'IN' ? '0=1' : '';
             }
             foreach ($values as $i => $value) {
-                if (is_string($value)) {
-                    $values[$i] = $this->db->quoteValue($value);
-                } else {
-                    $values[$i] = (string) $value;
-                }
+                $phName = static::PARAM_PREFIX.count($this->params);
+                $values[$i] = $phName;
+                $this->addParams([$phName=>$value]);
             }
             return $column . ' ' . $operator . ' (' . implode(', ', $values) . ')';
         }
@@ -945,7 +1006,9 @@ class FrameQuery {
             }
             $expressions = [];
             foreach ($values as $value) {
-                $expressions[] = $column . ' ' . $operator . ' ' . $this->db->quoteValue($value);
+                $phName = static::PARAM_PREFIX.count($this->params);
+                $expressions[] = $column . ' ' . $operator . ' ' . $phName;
+                $this->addParams([$phName=>$value]);
             }
             return implode($andor, $expressions);
         }
@@ -968,7 +1031,7 @@ class FrameQuery {
                 $table = $this->db->quoteTableName($table);
         }
 
-        $conditions = $this->processConditions($conditions);
+        $conditions = $this->buildCondition($conditions);
         if ($conditions != '')
             $conditions = ' ON ' . $conditions;
 
@@ -1034,8 +1097,10 @@ class FrameQuery {
      * @throws Exception
      */
     private function queryInternal($method, $fetchMode = null) {
-        //绑定参数
-        $this->bindValues($this->params);
+        /**
+         * 绑定参数
+         */
+        $this->bindValues();
         /**
          * 预处理
          */
@@ -1075,7 +1140,8 @@ class FrameQuery {
             return $cloneQuery->queryOne();
         } else {
             $cloneQuery->select("COUNT(*)");
-            $cloneQuery->order(''); ;
+            $cloneQuery->order('');
+            ;
             $cloneQuery->group('');
             $cloneQuery->having('');
             return $cloneQuery->queryOne();

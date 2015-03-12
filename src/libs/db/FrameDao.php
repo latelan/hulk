@@ -35,11 +35,11 @@
  * 修改：
  * $res = UserDao::update(array(
  *      'name'=>'liuliu'
- * ),'id=:id',[':id'=>17]);
+ * ),['id'=>17]);
  * return: 受影响的行数
  * 
  * 删除：
- * $res = UserDao::delete('id=:id',[':id'=>17]);
+ * $res = UserDao::delete(['id'=>17]);
  * return: 返回受影响的行数
  * 
  * 查询一行记录
@@ -124,13 +124,7 @@ abstract class FrameDao {
         if(is_numeric($param)){
             $query->andWhere(static::primaryKey().'=:id',[':id'=>$param]);
         }elseif(is_array($param)){
-            foreach ($param as $key => $value) {
-                if(is_array($value)){
-                    $query->andWhere(['in',$key,$value]);
-                }else{
-                    $query->andWhere("$key=:$key", [":$key"=>$value]);
-                }
-            }
+            $query->andWhere($param);
         }
         return $query->queryRow();
     }
@@ -141,14 +135,7 @@ abstract class FrameDao {
      * @return array
      */
     static public function queryAll(array $param) {
-        $query = static::find();
-        foreach ($param as $key => $value) {
-            if(is_array($value)){
-                $query->andWhere(['in',$key,$value]);
-            }else{
-                $query->andWhere("$key=:$key", [":$key"=>$value]);
-            }
-        }
+        $query = static::find()->where($param);
         return $query->queryAll();
     }
     

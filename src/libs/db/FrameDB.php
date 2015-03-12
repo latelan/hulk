@@ -214,9 +214,11 @@ class FrameDB {
         }
         if (($pos = strrpos($name, '.')) !== false) {
             $prefix = $this->quoteTableName(substr($name, 0, $pos)) . '.';
+            $name = substr($name, $pos + 1);
         } else {
             $prefix = '';
         }
+        
         return $prefix . $this->quoteSimpleColumnName($name);
     }
 
