@@ -656,10 +656,12 @@ class FrameQuery {
      */
     public function addParams(array $params) {
         if (!empty($params)) {
+            
+            if(isset($params[0]) || isset($params[1])){
+                throw new Exception('Not support the placeholder "?"');
+            }
+            
             if (empty($this->params)) {
-                if(isset($params[0]) || isset($params[1])){
-                    throw new Exception('Not support the placeholder "?"');
-                }
                 $this->params = $params;
             } else {
                 foreach ($params as $name => $value) {
@@ -667,6 +669,7 @@ class FrameQuery {
                 }
             }
         }
+        
         return $this;
     }
 
@@ -688,7 +691,7 @@ class FrameQuery {
      * @param array $params
      * @return \FrameQuery
      */
-    public function andWhere($conditions, $params = array()) {
+    public function andWhere($conditions, $params = []) {
         if (isset($this->_query['where']))
             $this->_query['where'] = $this->buildCondition(array('AND', $this->_query['where'], $conditions));
         else
@@ -1141,7 +1144,6 @@ class FrameQuery {
         } else {
             $cloneQuery->select("COUNT(*)");
             $cloneQuery->order('');
-            ;
             $cloneQuery->group('');
             $cloneQuery->having('');
             return $cloneQuery->queryOne();
