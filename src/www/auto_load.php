@@ -14,19 +14,19 @@ function getClassPath()
     if (!empty($classpath)) return $classpath;
     if(function_exists("apc_fetch"))
     {
-        $classpath = apc_fetch("hulk_app:1425882325");
+        $classpath = apc_fetch("hulk_app:1425611729");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        apc_store("hulk_app:1425882325",$classpath); 
+        apc_store("hulk_app:1425611729",$classpath); 
     }
     else if(function_exists("eaccelerator_get"))
     {
-        $classpath = eaccelerator_get("hulk_app:1425882325");
+        $classpath = eaccelerator_get("hulk_app:1425611729");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        eaccelerator_put("hulk_app:1425882325",$classpath); 
+        eaccelerator_put("hulk_app:1425611729",$classpath); 
     }
     else
     {
@@ -57,6 +57,7 @@ function getClassMapDef()
         "FrameDB"                      => '/home/zhangjiulong/web/lon/src/libs//db/FrameDB.php',
         "FrameQuery"                   => '/home/zhangjiulong/web/lon/src/libs//db/FrameQuery.php',
         "FrameTransaction"             => '/home/zhangjiulong/web/lon/src/libs//db/FrameTransaction.php',
+        "UserDao"                      => '/home/zhangjiulong/web/lon/src/libs//db/UserDao.php',
         "FrameLogDbTarget"             => '/home/zhangjiulong/web/lon/src/libs//log/FrameLogDbTarget.php',
         "FrameLogFileTarget"           => '/home/zhangjiulong/web/lon/src/libs//log/FrameLogFileTarget.php',
         "FrameLog"                     => '/home/zhangjiulong/web/lon/src/libs//log/FrameLog.php',

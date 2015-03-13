@@ -108,7 +108,7 @@ class FrameObject {
         if (method_exists($this, $getter)) {
             return $this->$getter();
         } else {
-            return $this->$name;
+            throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
         }
     }
 
@@ -122,7 +122,7 @@ class FrameObject {
         if (method_exists($this, $setter)) {
             $this->$setter($value);
         } else {
-            $this->$name = $value;
+            throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
         }
     }
 

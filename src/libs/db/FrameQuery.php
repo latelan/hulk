@@ -660,9 +660,7 @@ class FrameQuery extends FrameObject{
      * @return \FrameQuery
      */
     public function where($conditions, $params = []) {
-        $this->_query['where'] = $this->buildCondition($conditions);
-        $this->addParams($params);
-        return $this;
+        return $this->andWhere($conditions, $params);
     }
 
     /**

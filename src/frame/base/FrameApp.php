@@ -64,6 +64,11 @@ abstract class FrameApp extends FrameDI {
      */
     public $startTime;
     
+    /**
+     * 应用配置的其他属性
+     * @var array
+     */
+    private $__attrs__ =  [];
 
     /**
      * 初始化应用
@@ -89,6 +94,7 @@ abstract class FrameApp extends FrameDI {
     }
 
     protected function preInit($config) {
+        
         /**
          * 设置脚本开始时间
          */
@@ -235,5 +241,30 @@ abstract class FrameApp extends FrameDI {
             static::$app->get('log')->flush(true);
         }
     }
+    
+    /**
+     * 获取应用属性的取值顺序 定义的公有属性--DI容器中的对象--getName()---__attrs__属性（非公有）
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name) {
+        try {
+            return parent::__get($name);
+        } catch (Exception $e) {
+            return $this->__attrs__[$name];
+        }
+    }
 
+    /**
+     * 赋值应用属性的顺序 定义的公有属性--DI容器中的对象--setName($value)---__attrs__属性（非公有）
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value) {
+        try {
+            parent::__set($name, $value);
+        } catch (Exception $e) {
+            $this->__attrs__[$name] = $value;
+        }
+    }
 }
