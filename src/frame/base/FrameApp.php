@@ -11,17 +11,17 @@ abstract class FrameApp extends FrameDI {
      * 线上生产环境
      */
     const ENV_PROD = 'production';
-    
+
     /**
      * beta测试环境
      */
     const ENV_BETA = 'beta';
-    
+
     /**
      * 线下开发环境
      */
     const ENV_DEV = 'dev';
-    
+
     /**
      * 应用的单例
      * @var FrameWebApp|FrameConsoleApp 
@@ -29,11 +29,17 @@ abstract class FrameApp extends FrameDI {
     public static $app; //当前的应用实例
 
     /**
+     * 应用中的路径别名
+     * @var array 
+     */
+    public static $aliases = [];
+
+    /**
      * 是否为debug模式,默认为是
      * @var boolean 
      */
     public $debug = true;
-    
+
     /**
      * 应用的运行环境，详见：FrameApp::ENV_PROD|FrameApp::ENV_BETA|FrameApp::ENV_DEV
      * @var string
@@ -63,12 +69,12 @@ abstract class FrameApp extends FrameDI {
      * @var float 
      */
     public $startTime;
-    
+
     /**
      * 应用配置的其他属性
      * @var array
      */
-    private $__attrs__ =  [];
+    private $__attrs__ = [];
 
     /**
      * 初始化应用
@@ -79,14 +85,14 @@ abstract class FrameApp extends FrameDI {
          * 将应用的实例赋值给$app静态属性，项目中可以使用FrameApp::$app获取当前应用
          */
         static::$app = $this;
-        
+
         /**
          * 对配置文件进行预处理
          */
         $config = $this->preInit($config);
-        
+
         parent::__construct($config);
-        
+
         /**
          * 注册脚本结束时执行的代码到FrameApp::end()方法
          */
@@ -94,7 +100,7 @@ abstract class FrameApp extends FrameDI {
     }
 
     protected function preInit($config) {
-        
+
         /**
          * 设置脚本开始时间
          */
@@ -105,10 +111,10 @@ abstract class FrameApp extends FrameDI {
         /**
          * 设置应用的运行环境
          */
-        if(!in_array($this->env, [self::ENV_DEV,self::ENV_BETA,self::ENV_PROD])){
+        if (!in_array($this->env, [self::ENV_DEV, self::ENV_BETA, self::ENV_PROD])) {
             throw new ExceptionFrame('enviroment set error,it must in dev|prod|beta');
         }
-        
+
         /**
          * 设置项目根目录
          */
@@ -128,6 +134,14 @@ abstract class FrameApp extends FrameDI {
         } elseif (!ini_get('date.timezone')) {
             $this->setTimeZone('PRC');
         }
+        
+        /**
+         * 设置别名
+         */
+        if(isset($config['aliases'])){
+            $this->setAliases($config['aliases']);
+            unset($config['aliases']);
+        }
 
         /**
          * 注入核心应用组件
@@ -139,15 +153,7 @@ abstract class FrameApp extends FrameDI {
                 $config['components'][$id]['class'] = $component['class'];
             }
         }
-        /**
-         * 如果是设置路径(以Path结尾的变量)，则将匿名函数绑定到当前应用对象上,并调用匿名函数获取返回值
-         */
-        foreach ($config as $key => $value) {
-            if (($value instanceof Closure) && substr($key, -4) == 'Path') {
-                $cb = Closure::bind($value, $this);
-                $config[$key] = $cb();
-            }
-        }
+        
         return $config;
     }
 
@@ -160,6 +166,7 @@ abstract class FrameApp extends FrameDI {
         $p = realpath($path);
         if ($p !== false && is_dir($path)) {
             $this->_basePath = $path;
+            static::setAlias('@root', $path);
         } else {
             throw new ExceptionFrame('the dir of "basePath"(' . $path . ') is not exist!');
 //            throw new ExceptionFrame('basePath设置的目录(' . $path . ')不存在');
@@ -179,6 +186,7 @@ abstract class FrameApp extends FrameDI {
      * @param string $path
      */
     public function setLogPath($path) {
+        $path = static::getAlias($path);
         $this->_logPath = $path;
     }
 
@@ -220,17 +228,16 @@ abstract class FrameApp extends FrameDI {
 
         return $response;
     }
-    
-    
+
     abstract protected function handleRequest($request);
-    
+
     /**
      * 返回脚本执行到当前花费的毫秒数
      * @return float
      */
     public function getConsumeTime() {
         $spend = microtime(true) - $this->startTime;
-        return round($spend*1000, 2);
+        return round($spend * 1000, 2);
     }
 
     /**
@@ -241,7 +248,7 @@ abstract class FrameApp extends FrameDI {
             static::$app->get('log')->flush(true);
         }
     }
-    
+
     /**
      * 获取应用属性的取值顺序 定义的公有属性--DI容器中的对象--getName()---__attrs__属性（非公有）
      * @param string $name
@@ -267,4 +274,57 @@ abstract class FrameApp extends FrameDI {
             $this->__attrs__[$name] = $value;
         }
     }
+
+    /**
+     * 
+     * @param string $alias
+     * @return boolean|string
+     */
+    static public function getAlias($alias) {
+        //如果不带@直接返回
+        if (strncmp($alias, '@', 1)) {
+            return $alias;
+        }
+        $pos = strpos($alias, '/');
+        //获取别名
+        $root = $pos === false ? $alias : substr($alias, 0, $pos);
+        if (isset(static::$aliases[$root])) {
+            //如果存在别名 则返回全路径
+            return $pos === false ? static::$aliases[$root] : static::$aliases[$root] . substr($alias, $pos);
+        }
+        return false;
+    }
+
+    /**
+     * 设置路径别名
+     * @param string $alias
+     * @param string $path 别名对应的路径，可以是含别名的路径
+     * @throws ExceptionFrame 当$alias中包含/时 抛出异常
+     */
+    static public function setAlias($alias, $path) {
+        //如果别名不带@ 默认加上
+        if (strncmp($alias, '@', 1)) {
+            $alias = '@'.$alias;
+        }
+        $pos = strpos($alias, '/');
+        if ($pos !== false) {
+            throw new ExceptionFrame('the alias name can not contain "/"');
+        }
+        if ($path !== null) {
+            //设置路径
+            $path = strncmp($path, '@', 1) ? rtrim($path, '\\/') : static::getAlias($path);
+            static::$aliases[$alias] = $path;
+        } else {
+            //销毁别名
+            unset(static::$aliases[$alias]);
+        }
+    }
+    
+    //初始化应用时 设置路径别名
+    public function setAliases($aliases) {
+        foreach ($aliases as $alias => $path) {
+            static::setAlias($alias, $path);
+        }
+    }
+    
 }

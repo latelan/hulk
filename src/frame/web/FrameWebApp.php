@@ -25,6 +25,7 @@ class FrameWebApp extends FrameApp {
      * @param string $path
      */
     public function setControllerPath($path) {
+        $path = static::getAlias($path);
         $this->_controllerPath = $path;
     }
 

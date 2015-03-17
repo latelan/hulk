@@ -25,6 +25,7 @@ class FrameConsoleApp extends FrameApp {
      * @param string $path
      */
     public function setConsolePath($path) {
+        $path = static::getAlias($path);
         $this->_consolePath = $path;
     }
 

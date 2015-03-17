@@ -13,21 +13,38 @@ return [
      */
     'env'=>'dev',
     /**
-     * 设置应用的根目录
+     * 设置应用的根目录 默认会生成@root的路径别名 在配置的其他地方可以使用@root
      */
     'basePath'=>  dirname(__DIR__),
     /**
+     * 路径别名 
+     */
+    'aliases'=>[
+        '@app'=>'@root/src/app',    //@root对应的是basePath的路径
+    ],
+    /**
      * 控制器目录,默认为basePath/src/app/controllers
      */
-//    'controllerPath'=>  function(){return $this->basePath.'/src/app/controllers';},
-//    'logPath'=>  function(){return $this->basePath.'/logs';},
+//    'controllerPath'=>  '@root/src/app/controllers',
+    /**
+     * 日志目录 默认为basePath/logs
+     */
+//    'logPath'=>  '@root/logs',
+    /**
+     * 默认路由 当前url中没有pathinfo时采用，默认为HomeController
+     */
 //    'defaultRoute'=>'home',
+    /**
+     * 时区设置，默认取php.ini中的时区，如果php.ini中没有设置，则取PRC时区
+     */
 //    'timeZone'=>'PRC',
+    
     /**
      * components中配置的对象或者对象的配置文件会被注入到容器中
      */
     'components'=>[
-        'db'=>require __DIR__.'/db.php',
+        'db'=>require __DIR__.'/db.php',    //数据库对象配置
+        //日志对象配置
         'log'=>[
             'class'=>'FrameLog',
             'targets'=>[
