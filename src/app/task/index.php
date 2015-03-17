@@ -4,8 +4,14 @@ require_once 'auto_load.php';
 
 $config = require dirname(__DIR__) . '/../../config/console.php';
 
+/**
+ * 创建console应用
+ */
+$app = new FrameConsoleApp($config);
 try {
-    $app = new FrameConsoleApp($config);
+    /**
+     * 运行应用
+     */
     $app->run();
     exit(0);
 } catch (Exception $e) {

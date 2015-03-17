@@ -9,13 +9,12 @@ require_once 'auto_load.php';
  */
 $config = require dirname(__DIR__) . '/../config/app.php';
 
+/**
+ * 实例化一个web应用
+ */
+$app = new FrameWebApp($config);
 
 try {
-    /**
-     * 实例化一个web应用
-     */
-    $app = new FrameWebApp($config);
-    
     /**
      * 运行应用
      */
