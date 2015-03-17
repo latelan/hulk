@@ -43,7 +43,14 @@ return [
      * components中配置的对象或者对象的配置文件会被注入到容器中
      */
     'components'=>[
-        'db'=>require __DIR__.'/db.php',    //数据库对象配置
+        //数据库对象配置
+        'db'=>[
+            'class'=>'FrameDB',
+            'dsn' => 'mysql:host=10.16.57.145;dbname=hulk_log;port=5002',
+            'username' => 'hulk',
+            'password' => '0c1ddf12383bf776',
+            'charset' => 'utf8',
+        ],
         //日志对象配置
         'log'=>[
             'class'=>'FrameLog',

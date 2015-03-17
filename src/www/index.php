@@ -7,7 +7,7 @@ require_once 'auto_load.php';
 /**
  * 获取web应用的配置数组
  */
-$config = require dirname(__DIR__) . '/../config/app.php';
+$config = require dirname(__DIR__) . '/../config/web.php';
 
 /**
  * 实例化一个web应用
