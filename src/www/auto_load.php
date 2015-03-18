@@ -14,19 +14,19 @@ function getClassPath()
     if (!empty($classpath)) return $classpath;
     if(function_exists("apc_fetch"))
     {
-        $classpath = apc_fetch("hulk_app:1426236664");
+        $classpath = apc_fetch("hulk_app:1426656047");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        apc_store("hulk_app:1426236664",$classpath); 
+        apc_store("hulk_app:1426656047",$classpath); 
     }
     else if(function_exists("eaccelerator_get"))
     {
-        $classpath = eaccelerator_get("hulk_app:1426236664");
+        $classpath = eaccelerator_get("hulk_app:1426656047");
         if ($classpath) return $classpath;
 
         $classpath = getClassMapDef();
-        eaccelerator_put("hulk_app:1426236664",$classpath); 
+        eaccelerator_put("hulk_app:1426656047",$classpath); 
     }
     else
     {
@@ -38,8 +38,6 @@ function getClassMapDef()
 {
     return array(
         "HomeController"               => '/home/zhangjiulong/web/lon/src/app//controllers/HomeController.php',
-        "TimeDao"                      => '/home/zhangjiulong/web/lon/src/app//daos/TimeDao.php',
-        "TestModel"                    => '/home/zhangjiulong/web/lon/src/app//models/TestModel.php',
         "HomeConsole"                  => '/home/zhangjiulong/web/lon/src/app//task/HomeConsole.php',
         "ExceptionFrame"               => '/home/zhangjiulong/web/lon/src/frame//base/ExceptionFrame.php',
         "FrameApp"                     => '/home/zhangjiulong/web/lon/src/frame//base/FrameApp.php',

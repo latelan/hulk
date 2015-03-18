@@ -143,7 +143,11 @@
  * @author zhangjiulong
  */
 class FrameQuery extends FrameObject{
-
+    /**
+     * 绑定参数前缀，in查询等中使用
+     */
+    const PARAM_PREFIX = ':ZJL9';
+    
     /**
      *
      * @var FrameDB
