@@ -31,7 +31,7 @@ class FrameConsoleApp extends FrameApp {
 
     public function getConsolePath() {
         if ($this->_consolePath === null) {
-            $this->_consolePath = $this->getBasePath() . '/src/app/task';
+            $this->_consolePath = $this->getBasePath() . '/src/app/task/consoles';
         }
         return $this->_consolePath;
     }

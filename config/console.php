@@ -24,9 +24,9 @@ return [
         '@app' => '@root/src/app', //@root对应的是basePath的路径
     ],
     /**
-     * 控制器目录,默认为basePath/src/app/task
+     * 控制器目录,默认为basePath/src/app/task/consoles
      */
-//    'consolePath' => '@root/src/app/task',
+//    'consolePath' => '@root/src/app/task/consoles',
     /**
      * 日志目录 默认为basePath/logs
      */
