@@ -1058,7 +1058,11 @@ class FrameQuery extends FrameObject{
      * @return array
      */
     public function queryRow() {
-        return $this->queryInternal('fetch');
+        $res = $this->queryInternal('fetch');
+        if ($res == false) {
+            return [];
+        }
+        return $res;
     }
 
     /**

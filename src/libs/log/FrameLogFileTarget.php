@@ -31,7 +31,7 @@ class FrameLogFileTarget extends FrameLogTarget{
         //每个category创建一个文件
         foreach ($this->_messageGroup as $category => $messages) {
             $logfile = $this->getLogFile($category);
-            $text = implode("\n", array_map([$this,'formatMessage'], $messages))."\n";
+            $text = implode("\n\n", array_map([$this,'formatMessage'], $messages))."\n";
             if(($fp =  @fopen($logfile, 'a'))===false){
                 throw new ExceptionFrame('unable to append logfile:'.$logfile);
             }

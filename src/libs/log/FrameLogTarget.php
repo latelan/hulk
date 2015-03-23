@@ -80,7 +80,7 @@ abstract class FrameLogTarget extends FrameObject {
         list($text, $level, $category, $time) = $message;
         $levelName = FrameLog::getLevelName($level);
         if(!is_string($text)){
-            $text = var_export($text, true);
+            $text = print_r($text, true);
         }
         return date('Y-m-d H:i:s', $time)." [$levelName][$category]\n".$text;
     }
