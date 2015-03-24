@@ -133,7 +133,14 @@ class FrameController extends FrameObject {
      * @return mixed
      */
     public function getRequest($name = null, $default = null) {
-        return FrameApp::$app->getRequest()->getRequest($name, $default);
+        $request =  FrameApp::$app->getRequest()->getRequest($name, $default);
+        if($key==null){
+            $controllerAction = $this->id.'/'.  $this->actionId;
+            if(isset($request[$controllerAction])){
+                unset($request[$controllerAction]);
+            }
+        }
+        return $request;
     }
 
     /**
