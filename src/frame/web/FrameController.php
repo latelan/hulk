@@ -92,10 +92,8 @@ class FrameController extends FrameObject {
             if (array_key_exists($name, $params)) {
                 if ($param->isArray()) {
                     $args[] = $actionParams[$name] = is_array($params[$name]) ? $params[$name] : [$params[$name]];
-                } elseif (!is_array($params[$name])) {
-                    $args[] = $actionParams[$name] = $params[$name];
                 } else {
-                    throw new ExceptionFrame('wrong param ' . $name);
+                    $args[] = $actionParams[$name] = $params[$name];
                 }
                 unset($params[$name]);
             } elseif ($param->isDefaultValueAvailable()) {
