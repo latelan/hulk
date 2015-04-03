@@ -37,6 +37,12 @@ class FrameRequest extends FrameObject {
      */
     private $_baseUrl;
 
+    /**
+     * 含域名的url，eg:http://www.360.cn
+     * @var string 
+     */
+    private $_hostInfo;
+
     public function getRequest($name = null, $default = null) {
         if ($name === null) {
             return array_merge($this->getPost(), $this->getQuery());
@@ -89,12 +95,12 @@ class FrameRequest extends FrameObject {
      */
     protected function resolvePathInfo() {
         $pathInfo = $this->getUrl();
-        if (($pos = strpos($pathInfo, '?')) !== false) {
+        if (($pos      = strpos($pathInfo, '?')) !== false) {
             $pathInfo = substr($pathInfo, 0, $pos);
         }
-        $pathInfo = urldecode($pathInfo);
+        $pathInfo  = urldecode($pathInfo);
         $scriptUrl = $this->getScriptUrl();
-        $baseUrl = $this->getBaseUrl();
+        $baseUrl   = $this->getBaseUrl();
         if (strpos($pathInfo, $scriptUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($scriptUrl));
         } elseif ($baseUrl === '' || strpos($pathInfo, $baseUrl) === 0) {
@@ -199,6 +205,46 @@ class FrameRequest extends FrameObject {
      */
     public function setScriptFile($value) {
         $this->_scriptFile = $value;
+    }
+
+    /**
+     * 返回是否是https
+     * @return boolean if the request is sent via secure channel (https)
+     */
+    public function getIsSecureConnection() {
+        return isset($_SERVER['HTTPS']) && (strcasecmp($_SERVER['HTTPS'], 'on') === 0 || $_SERVER['HTTPS'] == 1) || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strcasecmp($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') === 0;
+    }
+
+    /**
+     * 返回hostname的url，eg：http://www.360.cn
+     * @return type
+     */
+    public function getHostInfo() {
+        if ($this->_hostInfo === null) {
+            $secure = $this->getIsSecureConnection();
+            $http   = $secure ? 'https' : 'http';
+            if (isset($_SERVER['HTTP_HOST'])) {
+                $this->_hostInfo = $http . '://' . $_SERVER['HTTP_HOST'];
+            } else {
+
+                $this->_hostInfo = $http . '://' . $_SERVER['SERVER_NAME'];
+                $port            = $this->getPort();
+                if (($port !== 80 && !$secure) || ($port !== 443 && $secure)) {
+                    $this->_hostInfo .= ':' . $port;
+                }
+            }
+        }
+        return $this->_hostInfo;
+    }
+
+    //返回网站端口
+    public function getPort() {
+        $secure = $this->getIsSecureConnection();
+        if ($secure) {
+            return isset($_SERVER['SERVER_PORT']) ? (int) $_SERVER['SERVER_PORT'] : 443;
+        } else {
+            return isset($_SERVER['SERVER_PORT']) ? (int) $_SERVER['SERVER_PORT'] : 80;
+        }
     }
 
 }
