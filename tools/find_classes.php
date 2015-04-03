@@ -14,7 +14,7 @@ else
 class AutoloadBuilder
 {/*{{{*/
     private static $_paths = array();
-    private static $_skipFolders = array('web-inf', 'tmp', '.svn', 'sqls', 'logs', 'project');
+    private static $_skipFolders = array('web-inf', 'tmp', '.svn', 'sqls', 'logs', 'project','controllers');
     private static $_skipFiles= array();
     private static $_fileNameTemplate = array('php');
     
@@ -192,10 +192,12 @@ ___DATA___
              {
                  continue;
              }
-
-             if (is_dir($file) && self::isSkipFolders($file)) continue;
+             
+             //changed by zhangjiulong 直接判断$file只能匹配出.svn
+             if (is_dir("$dirname/$file") && self::isSkipFolders($file)) continue;
              
              $file = "$dirname/$file";
+             
              if (is_dir($file))
              {
                  $filelist = self::findFiles($file, $filelist);

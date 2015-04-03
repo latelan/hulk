@@ -170,20 +170,48 @@ class FrameWebApp extends FrameApp {
         }
         //驼峰命名的控制器可以用短横分隔来请求 admin-hulk/index 相当于 AdminHulkController::indexAction()
         $className = str_replace(' ', '', ucwords(str_replace('-', ' ', $className))) . 'Controller';
-        if (strpos($className, '-') !== false || !class_exists($className)) {
+        //类名中不能再有短横
+        if(strpos($className, '-') !== false){
             return null;
         }
+        
         //如果控制器类文件不存在 返回空
         $controllerFile = realpath($this->getControllerPath() . '/' . $prefix . '/' . $className . '.php');
         if (!file_exists($controllerFile)) {
             return null;
+        }else{  //存在则加载文件 以及baseController
+            $this->requireBaseControllerFile($prefix);
+            include($controllerFile);
         }
-
+        
         //控制器必须继承自FrameController或其子类
         if (is_subclass_of($className, 'FrameController')) {
+            //实例化之前先require BaseController如果有的话
             return static::createObject($className, ['id' => $id]);
         } else {
             return null;
+        }
+    }
+    
+    /**
+     * require baseController
+     * @param string $prefix 控制器路由的前缀
+     */
+    protected function requireBaseControllerFile($prefix) {
+        if($prefix==''){
+            $file =  realpath($this->getControllerPath() . '/' . $prefix . '/' . $this->baseControllerName.'.php');
+            if(file_exists($file)){
+                require_once $file;
+            }
+        }else{
+            $path = '';
+            foreach (explode('/', $prefix) as $dir) {
+                $path .= $dir.'/';
+                $file = realpath($this->getControllerPath() . '/' . $path . '/' . $this->baseControllerName.'.php');
+                if(file_exists($file)){
+                    require_once $file;
+                }
+            }
         }
     }
 
