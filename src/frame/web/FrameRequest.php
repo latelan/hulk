@@ -68,7 +68,7 @@ class FrameRequest extends FrameObject {
      */
     public function resolve() {
         $pathInfo = $this->getPathInfo();
-        return [$pathInfo, $_GET];
+        return [$pathInfo, $this->getRequest()];
     }
 
     /**
