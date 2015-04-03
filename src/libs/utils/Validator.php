@@ -16,7 +16,7 @@ class Validator {
         'string'=>'不是一个字符串或者字串长度不匹配',
         'arr'=>'不是一个数组或者数组里面值的个数不匹配',
         'in'=>'不在给出的range的范围中',
-        'ip'=>'不是一个Ip',
+        'ip'=>'不是IP',
         'match'=>'不合法',
     ];
 
@@ -126,7 +126,7 @@ class Validator {
      * @param boolean $strict 是否采用严格模式的in_array
      * @return boolean
      */
-    static public function in($value,array $range,$allowEmpty=true,$not=false,$strict=true) {
+    static public function in($value,array $range,$allowEmpty=true,$not=false,$strict=false) {
         //如果可以为空 并且为空 返回true
         if ($allowEmpty && static::isEmpty($value)) {
             return true;
@@ -166,9 +166,10 @@ class Validator {
      * 验证ip
      * @param string|array $value 如果为数组，则需要数组的每个值都能匹配ip 才返回true
      * @param boolean $allowEmpty
+     * @param boolean $not 设置true表示 必须全部不是ip，有一个ip则返回false
      * @return boolean
      */
-    static public function ip($value,$allowEmpty=true) {
+    static public function ip($value,$allowEmpty=true,$not=false) {
         //如果可以为空 并且为空 返回true
         if ($allowEmpty && static::isEmpty($value)) {
             return true;
@@ -177,14 +178,14 @@ class Validator {
         $pattern = "/^((([0-9]?[0-9])|(1[0-9]{2})|(2[0-4][0-9])|(25[0-5]))\.){3}(([0-9]?[0-9])|(1[0-9]{2})|(2[0-4][0-9])|(25[0-5]))$/";
         if(is_array($value)){
             foreach ($value as $v) {
-                $res = static::match($v, $pattern, false);
+                $res = static::match($v, $pattern, false,$not);
                 if($res==false){
                     return false;
                 }
             }
             return true;
         }else{
-            return static::match($value, $pattern, false);
+            return static::match($value, $pattern, false,$not);
         }
     }
 

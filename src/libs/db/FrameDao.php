@@ -72,12 +72,13 @@ abstract class FrameDao extends FrameObject{
     /**
      * 执行一条插入语句
      * @param array $columns
+     * @param boolean $return_id 是否要返回自增id，默认为true，false则返回影响的行数 
      * @return int 受影响的行数
      */
-    static public function insert($columns) {
+    static public function insert($columns,$return_id=true) {
         $query = static::find();
-        $query->insert(static::tableName(), $columns);
-        return $query->getLastInsertId();
+        $num = $query->insert(static::tableName(), $columns);
+        return $return_id?$query->getLastInsertId():$num;
     }
     
     /**
@@ -115,10 +116,11 @@ abstract class FrameDao extends FrameObject{
     /**
      * 获取一行信息
      * @param int|array $param
+     * @param array|string $select 要取出来的字段
      * @return array
      */
-    static public function queryRow($param) {
-        $query = static::find();
+    static public function queryRow($param,$select='*') {
+        $query = static::find()->select($select);
         //根据主键查询 @TODO 只支持单主键查询
         if(is_numeric($param)){
             $query->andWhere(static::primaryKey().'=:id',[':id'=>$param]);
@@ -131,11 +133,23 @@ abstract class FrameDao extends FrameObject{
     /**
      * 返回多行记录
      * @param array $param
+     * @param array|string $select 要取出来的字段
      * @return array
      */
-    static public function queryAll(array $param) {
-        $query = static::find()->where($param);
+    static public function queryAll(array $param,$select='*') {
+        $query = static::find()->select($select)->where($param);
         return $query->queryAll();
+    }
+    
+    /**
+     * 取一列数据
+     * @param string $select 要取的字段
+     * @param array $param 条件
+     * @return array
+     */
+    static public function queryColumn($select,$param=[]) {
+        $query = static::find()->select($select)->where($param);
+        return $query->queryColumn();
     }
     
     /**
@@ -151,3 +165,4 @@ abstract class FrameDao extends FrameObject{
         return 'id';
     }
 }
+
