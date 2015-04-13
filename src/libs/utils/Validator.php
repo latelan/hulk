@@ -48,11 +48,11 @@ class Validator {
             return false;
         }
         //如果小于设置的最小值 返回false
-        if ($min != null && $value < $min) {
+        if ($min !== null && $value < $min) {
             return false;
         }
         //如果大于设置的最大值 返回false
-        if ($max != null && $value > $max) {
+        if ($max !== null && $value > $max) {
             return false;
         }
         return true;
@@ -78,11 +78,11 @@ class Validator {
         }
         $len = $encode ? mb_strlen($value, 'UTF-8') : strlen($value);
         //字串长度小于给出的长度
-        if ($min != null && $len < $min) {
+        if ($min !== null && $len < $min) {
             return false;
         }
         //字串长度大于给出的长度
-        if ($max != null && $len > $max) {
+        if ($max !== null && $len > $max) {
             return false;
         }
         return true;

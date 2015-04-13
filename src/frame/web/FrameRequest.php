@@ -246,5 +246,11 @@ class FrameRequest extends FrameObject {
             return isset($_SERVER['SERVER_PORT']) ? (int) $_SERVER['SERVER_PORT'] : 80;
         }
     }
+    
+    //返回当前请求的绝对路径
+    public function getAbsoluteUrl()
+    {
+        return $this->getHostInfo().$this->getUrl();
+    }
 
 }
