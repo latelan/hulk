@@ -21,6 +21,11 @@ abstract class FrameApp extends FrameDI {
      * 线下开发环境
      */
     const ENV_DEV = 'dev';
+    
+    /**
+     * 测试环境
+     */
+    const ENV_TEST = 'test';
 
     /**
      * 应用的单例
@@ -75,6 +80,18 @@ abstract class FrameApp extends FrameDI {
      * @var array
      */
     private $__attrs__ = [];
+    
+    /**
+     * 业务控制器继承的基类名称
+     * @var string
+     */
+    public $baseControllerName = 'BaseController';
+    
+    /**
+     * 预加载的组件，默认预加载日志组件
+     * @var array
+     */
+    public $preloads = ['log'];
 
     /**
      * 初始化应用
@@ -111,8 +128,8 @@ abstract class FrameApp extends FrameDI {
         /**
          * 设置应用的运行环境
          */
-        if (!in_array($this->env, [self::ENV_DEV, self::ENV_BETA, self::ENV_PROD])) {
-            throw new ExceptionFrame('enviroment set error,it must in dev|prod|beta');
+        if (!in_array($this->env, [self::ENV_DEV, self::ENV_BETA, self::ENV_PROD,  self::ENV_TEST])) {
+            throw new ExceptionFrame('enviroment set error,it must in dev|prod|beta|test');
         }
 
         /**
@@ -157,6 +174,15 @@ abstract class FrameApp extends FrameDI {
         return $config;
     }
 
+    public function init() {
+        //实例化log等预加载组件
+        foreach ($this->preloads as $id) {
+            if($this->has($id)){
+                $this->get($id);
+            }
+        }
+    }
+    
     /**
      * 设置项目的src目录
      * @param string $path
@@ -325,6 +351,26 @@ abstract class FrameApp extends FrameDI {
         foreach ($aliases as $alias => $path) {
             static::setAlias($alias, $path);
         }
+    }
+    
+    //是否为开发环境
+    public function isDev($include_test=true)
+    {
+        $envs = [self::ENV_DEV];
+        if($include_test){
+            $envs[] = self::ENV_TEST;
+        }
+        return in_array($this->env, $envs);
+    }
+    
+    //是否为生产环境
+    public function isProd($include_beta=true)
+    {
+        $envs = [self::ENV_PROD];
+        if($include_beta){
+            $envs[] = self::ENV_BETA;
+        }
+        return in_array($this->env, $envs);
     }
     
 }

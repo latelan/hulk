@@ -141,6 +141,10 @@ ___DATA___
             {
                 $classes[] = trim($match[1], '{}');
             }
+            if (preg_match("/^\s*trait\s+(\S+)\s*/i", $line, $match))
+            {
+                $classes[] = trim($match[1], '{}');
+            }
         }
         return $classes;
     }/*}}}*/

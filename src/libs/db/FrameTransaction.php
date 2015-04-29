@@ -12,14 +12,15 @@ class FrameTransaction extends FrameObject {
      * @var FrameDB
      */
     public $db;
-    
+
     /**
      * 事务的层级，用来控制多层事务嵌套
      * @var type 
      */
     private $_level = 0;
 
-    public function getIsActive() {
+    public function getIsActive()
+    {
         return $this->_level > 0 && $this->db && $this->db->getIsActive();
     }
 
@@ -27,7 +28,8 @@ class FrameTransaction extends FrameObject {
      * 开启事务
      * @throws ExceptionFrame
      */
-    public function begin() {
+    public function begin()
+    {
         if ($this->db === null) {
             throw new ExceptionFrame('FrameTransaction::db must be set.');
         }
@@ -45,12 +47,13 @@ class FrameTransaction extends FrameObject {
      * 提交事务
      * @throws ExceptionFrame
      */
-    public function commit() {
+    public function commit()
+    {
         if (!$this->getIsActive()) {
             throw new ExceptionFrame('Fail to commint transaction: transaction was inactive.');
         }
         $this->_level--;
-        
+
         //@TODO log
         if ($this->_level == 0) {
             $this->db->pdo->commit();
@@ -59,9 +62,11 @@ class FrameTransaction extends FrameObject {
 
     /**
      * 事务回滚
+     * @param $e 内层事务回滚时抛出的异常，如果不传值默认抛出内部事务错误
      * @return null
      */
-    public function rollBack() {
+    public function rollBack(Exception $e = null)
+    {
         if (!$this->getIsActive()) {
             //do nothing
             return;
@@ -72,9 +77,11 @@ class FrameTransaction extends FrameObject {
             $this->db->pdo->rollBack();
             return;
         }
-
-        throw new ExceptionFrame('the inner transaction error!');
-        
+        if ($e) {
+            throw $e;
+        } else {
+            throw new ExceptionFrame('the inner transaction error!');
+        }
     }
 
 }

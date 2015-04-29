@@ -6,7 +6,25 @@
  * @author zhangjiulong
  */
 class Controller extends FrameController {
-
+    /**
+     * 返回的结果
+     * @var array 
+     */
+    protected $_msg = [
+        'errno'=>0,
+        'errmsg'=>'',
+        'data'=>[
+        ]
+    ];
+    
+    /**
+     * 设置返回的_msg里面的data
+     * @param array $data
+     */
+    public function setData($data) {
+        $this->_msg['data'] = (array)$data + $this->_msg['data'];
+    }
+    
     protected function beforeAction() {
         
         //执行验证请求的参数 失败则抛出异常
@@ -144,7 +162,7 @@ class Controller extends FrameController {
             }
             //缺失验证参数
             if (!empty($missing)) {
-                throw new ExceptionFrame('Missing the param:' . $name.' of the validate method:'.$validateMethod);
+                throw new ExceptionFrame('Missing the param:' . implode(' | ', $missing).' of the validate method:'.$validateMethod);
             }
             $message = isset($params['message'])?$params['message']:Validator::$messages[$validateMethod];
             foreach ($attributes as $attribute) {
@@ -153,7 +171,6 @@ class Controller extends FrameController {
                 $res = call_user_func_array(['Validator', $validateMethod], $args);
                 //如果验证失败 抛出异常
                 if (!$res) {
-                    //@TODO 记录日志
                     throw new ExceptionFrame('验证失败, '.$this->getAttributeLabel($attribute).' '.$message);
                 }
             }

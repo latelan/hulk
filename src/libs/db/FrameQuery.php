@@ -9,10 +9,10 @@
  * 
  * 表user：
  * CREATE TABLE `user` (
-    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `name` varchar(255) NOT NULL DEFAULT '',
-    `age` tinyint(3) unsigned NOT NULL DEFAULT '0',
-    PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `age` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  * 
  * 获取Db数据库连接对象和query对象
@@ -71,19 +71,19 @@
  * [1,2,3,4,5,10]
  * 
  * 内联查询 SELECT `a`.*, `b`.* FROM `user` `a` JOIN `time` `b` ON a.id=b.uid WHERE `a`.`id`=5
-    $res = $query->select('a.*,b.utime')
-       ->from('user as a')
-       ->join('time as b', 'a.id=b.uid')
-       ->where(['a.id'=>5])
-       ->queryAll();
+  $res = $query->select('a.*,b.utime')
+  ->from('user as a')
+  ->join('time as b', 'a.id=b.uid')
+  ->where(['a.id'=>5])
+  ->queryAll();
  * 
  * 左联查询 SELECT `a`.*, `b`.`name` FROM `user` `a` LEFT JOIN `time` `b` ON a.id=b.uid WHERE (a.id>=5) AND (a.id<=10)
-    $res = $query->select('a.*,b.name')
-        ->from('user as a')
-        ->leftJoin('time as b', 'a.id=b.uid')
-        ->where('a.id>=:id',[':id'=>5])
-        ->andWhere('a.id<=:lid',[':lid'=>10])
-        ->queryAll();
+  $res = $query->select('a.*,b.name')
+  ->from('user as a')
+  ->leftJoin('time as b', 'a.id=b.uid')
+  ->where('a.id>=:id',[':id'=>5])
+  ->andWhere('a.id<=:lid',[':lid'=>10])
+  ->queryAll();
  * 
  * 分组使用 SELECT min(id),age FROM `user` GROUP BY `age`
  * $res = $query->select('min(id),age')->from('user')->group('age')->queryAll();
@@ -142,12 +142,13 @@
  * ~~~~~~~~
  * @author zhangjiulong
  */
-class FrameQuery extends FrameObject{
+class FrameQuery extends FrameObject {
+
     /**
      * 绑定参数前缀，in查询等中使用
      */
     const PARAM_PREFIX = ':ZJL9';
-    
+
     /**
      *
      * @var FrameDB
@@ -189,6 +190,7 @@ class FrameQuery extends FrameObject{
      * @var array
      */
     private $_query;
+    
 
     public function __construct($config = array()) {
         parent::__construct($config);
@@ -196,7 +198,7 @@ class FrameQuery extends FrameObject{
             $this->db = FrameApp::$app->getDb();
         }
     }
-    
+
     /**
      * 返回当前的sql语句（未绑定参数）
      * @return string
@@ -257,11 +259,20 @@ class FrameQuery extends FrameObject{
 
         try {
             //@TODO 此处可记录SQL日志 log($this->getRawSql())
+            FrameLog::info($this->getRawSql(), 'sql.execute');
             $this->pdoStatement->execute();
             $n = $this->pdoStatement->rowCount();
             return $n;
         } catch (Exception $e) {
-            throw new ExceptionFrame('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
+            //如果自动可以自动重连
+            if(in_array($e->errorInfo[1], array(2013, 2006)) && $this->db->auto_reconnect) {
+                $this->db->close();
+                $this->cancel();
+                $this->bindValues();
+                return $this->execute();
+            }else{
+                throw new ExceptionFrame('Error to execute sql, ' . $e->getMessage(), (int) $e->getCode());
+            }
         }
     }
 
@@ -320,10 +331,10 @@ class FrameQuery extends FrameObject{
      * @return \FrameQuery
      */
     public function bindValues($values = []) {
-        if(!empty($values)){
+        if (!empty($values)) {
             $this->params = array_merge($this->params, $values);
         }
-        
+
         foreach ($this->params as $name => $value) {
             if (is_array($value)) {
                 $this->_pendingParams[$name] = $value;
@@ -434,7 +445,7 @@ class FrameQuery extends FrameObject{
                 $this->addParams($value->params);
             } else {
                 $placeholders[] = ':' . $name;
-                $this->addParams([":$name"=>$value]);
+                $this->addParams([":$name" => $value]);
             }
         }
         $sql = 'INSERT INTO ' . $this->db->quoteTableName($table)
@@ -464,13 +475,13 @@ class FrameQuery extends FrameObject{
         foreach ($rows as $row) {
             $vs = [];
             foreach ($row as $i => $value) {
-                if($value===null){
+                if ($value === null) {
                     $value = 'NULL';
-                }elseif($value===false){
+                } elseif ($value === false) {
                     $value = 0;
-                }else{
-                    $phName = self::PARAM_PREFIX.count($this->params);
-                    $this->addParams(["$phName"=>$value]);
+                } else {
+                    $phName = self::PARAM_PREFIX . count($this->params);
+                    $this->addParams(["$phName" => $value]);
                     $value = "$phName";
                 }
                 $vs[] = $value;
@@ -504,7 +515,7 @@ class FrameQuery extends FrameObject{
                 $this->addParams($value->params);
             } else {
                 $lines[] = $this->db->quoteColumnName($name) . '=:' . $name;
-                $this->addParams([":$name"=>$value]);
+                $this->addParams([":$name" => $value]);
             }
         }
         $sql = 'UPDATE ' . $this->db->quoteTableName($table) . ' SET ' . implode(', ', $lines);
@@ -640,11 +651,11 @@ class FrameQuery extends FrameObject{
      */
     public function addParams(array $params) {
         if (!empty($params)) {
-            
-            if(isset($params[0]) || isset($params[1])){
+
+            if (isset($params[0]) || isset($params[1])) {
                 throw new Exception('Not support the placeholder "?"');
             }
-            
+
             if (empty($this->params)) {
                 $this->params = $params;
             } else {
@@ -653,7 +664,7 @@ class FrameQuery extends FrameObject{
                 }
             }
         }
-        
+
         return $this;
     }
 
@@ -831,6 +842,17 @@ class FrameQuery extends FrameObject{
     public function setOrder($value) {
         $this->order($value);
     }
+    
+    /**
+     * 设置分页
+     * @param int $page 页码
+     * @param int $pagesize 页大小
+     */
+    public function page($page=1,$pagesize=50)
+    {
+        $this->limit($pagesize, $pagesize*($page-1));
+        return $this;
+    }
 
     /**
      * limit语句
@@ -930,7 +952,7 @@ class FrameQuery extends FrameObject{
         }
         return count($parts) === 1 ? $parts[0] : '(' . implode(') AND (', $parts) . ')';
     }
-    
+
     /**
      * 组装条件
      * @param string|array $conditions
@@ -972,9 +994,9 @@ class FrameQuery extends FrameObject{
                 return $operator === 'IN' ? '0=1' : '';
             }
             foreach ($values as $i => $value) {
-                $phName = static::PARAM_PREFIX.count($this->params);
+                $phName = static::PARAM_PREFIX . count($this->params);
                 $values[$i] = $phName;
-                $this->addParams([$phName=>$value]);
+                $this->addParams([$phName => $value]);
             }
             return $column . ' ' . $operator . ' (' . implode(', ', $values) . ')';
         }
@@ -991,9 +1013,9 @@ class FrameQuery extends FrameObject{
             }
             $expressions = [];
             foreach ($values as $value) {
-                $phName = static::PARAM_PREFIX.count($this->params);
+                $phName = static::PARAM_PREFIX . count($this->params);
                 $expressions[] = $column . ' ' . $operator . ' ' . $phName;
-                $this->addParams([$phName=>$value]);
+                $this->addParams([$phName => $value]);
             }
             return implode($andor, $expressions);
         }
@@ -1096,6 +1118,7 @@ class FrameQuery extends FrameObject{
         $this->prepare();
         try {
             //@TODO 此处记录查询语句 log($this->getRawSql())
+            FrameLog::info($this->getRawSql(), 'sql.query');
             $this->pdoStatement->execute();
             if ($method == '') {
                 return $this->pdoStatement;
@@ -1108,7 +1131,14 @@ class FrameQuery extends FrameObject{
                 return $result;
             }
         } catch (Exception $e) {
-            throw new ExceptionFrame('Query fail:' . $e->getMessage(), (int) $e->getCode());
+            //如果自动可以自动重连
+            if(in_array($e->errorInfo[1], array(2013, 2006)) && $this->db->auto_reconnect) {
+                $this->db->close();
+                $this->cancel();
+                return $this->queryInternal($method, $fetchMode);
+            }else{
+                throw new ExceptionFrame('Query fail:' . $e->getMessage(), (int) $e->getCode());
+            }
         }
     }
 

@@ -69,6 +69,12 @@ class FrameDB extends FrameObject {
      * @var FrameTransaction 
      */
     private $_transaction;
+    
+    /**
+     * 是否自动重连
+     * @var boolean 
+     */
+    public $auto_reconnect = false;
 
     /**
      * 

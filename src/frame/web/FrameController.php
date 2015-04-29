@@ -20,11 +20,22 @@ class FrameController extends FrameObject {
     public $defaultAction = 'index';
     
     /**
-     * 当前的action名称
+     * 当前的action唯一标示
      * @var string
      */
     public $actionId;
     public $actionParams = [];
+    
+    /**
+     * 当前action的名称
+     * @var string 
+     */
+    private $_actionName;
+    
+    final public function __construct($config = array())
+    {
+        return parent::__construct($config);
+    }
 
     /**
      * 运行控制器
@@ -68,9 +79,11 @@ class FrameController extends FrameObject {
      */
     protected function resolveActionMethod($actionId) {
         if (preg_match('/^[a-zA-Z0-9\\_-]+$/', $actionId) && strpos($actionId, '--') === false && trim($actionId, '-') === $actionId) {
-            $methodName = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId)))) . 'Action';
+            $actionName = lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $actionId))));
+            $methodName = $actionName . 'Action';
             $method = new ReflectionMethod($this, $methodName);
             if ($method->isPublic() && $method->getName() === $methodName) {
+                $this->setActionName($actionName);
                 return $methodName;
             }
         }
@@ -132,7 +145,7 @@ class FrameController extends FrameObject {
      */
     public function getRequest($name = null, $default = null) {
         $request =  FrameApp::$app->getRequest()->getRequest($name, $default);
-        if($key==null){
+        if($name==null){
             $controllerAction = $this->id.'/'.  $this->actionId;
             if(isset($request[$controllerAction])){
                 unset($request[$controllerAction]);
@@ -159,6 +172,42 @@ class FrameController extends FrameObject {
      */
     public function getParam($name, $default = null) {
         return FrameApp::$app->getRequest()->getParam($name, $default);
+    }
+    
+    /**
+     * 返回当前控制器的名称
+     * @return string
+     */
+    public function getControllerName()
+    {
+        $pos = strrpos($this->id, '/');
+        if ($pos === false) {
+            $className = $this->id;
+        } else {
+            $className = substr($this->id, $pos + 1);
+        }
+        return str_replace(' ', '', ucwords(str_replace('-', ' ', $className)));
+    }
+    
+    /**
+     * 返回当前action的名称
+     * @return string
+     */
+    public function getActionName()
+    {
+        if($this->_actionName!==null){
+            return $this->_actionName;
+        }
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $this->actionId))));
+    }
+    
+    /**
+     * 设置当前action的名称
+     * @param string $name
+     */
+    public function setActionName($name)
+    {
+        $this->_actionName = $name;
     }
 
 }
