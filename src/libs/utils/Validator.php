@@ -16,7 +16,7 @@ class Validator {
         'number'   => '不是一个数值或者数值的大小不匹配',
         'string'   => '不是一个字符串或者字串长度不匹配',
         'arr'      => '不是一个数组或者数组里面值的个数不匹配',
-        'in'       => '不在给出的range的范围中',
+        'in'       => '不在指定的选值范围中',
         'ip'       => '不是IP',
         'match'    => '不合法',
         'custom'   => '验证失败'
@@ -39,9 +39,10 @@ class Validator {
      * @param integer $min 验证最小值
      * @param integer $max 验证最大值
      * @param boolean $allowEmpty 是否可以为空 可以为空则跳过验证
+     * @param boolean $float  是否可以为浮点数，默认是不可以
      * @return boolean
      */
-    static public function number($value, $allowEmpty = true, $min = null, $max = null)
+    static public function number($value, $allowEmpty = true, $float = false, $min = null, $max = null)
     {
         //如果可以为空 并且为空 返回true
         if ($allowEmpty && static::isEmpty($value)) {
@@ -50,6 +51,12 @@ class Validator {
         //如果不是数值，返回false
         if (!is_numeric($value)) {
             return false;
+        }
+        //如果不可以为浮点数
+        if ($float === false) {
+            if (strpos($value, '.') !== false) {
+                return false;
+            }
         }
         //如果小于设置的最小值 返回false
         if ($min !== null && $value < $min) {
@@ -216,8 +223,14 @@ class Validator {
         if (!is_callable($callback)) {
             throw new ExceptionFrame('the callback function is not callable');
         }
-        $param_arr = ['value' => $value, 'params' => $params];
-        $res       = call_user_func_array($callback, $param_arr);
+//        $param_arr = ['value' => $value, 'params' => $params];
+        $param_arr = [$value];
+        if (!empty($params)) {
+            foreach ($params as $val) {
+                $param_arr[] = $val;
+            }
+        }
+        $res = call_user_func_array($callback, $param_arr);
         return $res !== false;
     }
 
