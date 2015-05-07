@@ -223,15 +223,15 @@ class FrameRequest extends FrameObject {
         if ($this->_hostInfo === null) {
             $secure = $this->getIsSecureConnection();
             $http   = $secure ? 'https' : 'http';
-            if (isset($_SERVER['HTTP_HOST'])) {
-                $this->_hostInfo = $http . '://' . $_SERVER['HTTP_HOST'];
-            } else {
-
+            //先判断SERVER_NAME，有的请求，http_host不带端口值
+            if(isset($_SERVER['SERVER_NAME'])){
                 $this->_hostInfo = $http . '://' . $_SERVER['SERVER_NAME'];
                 $port            = $this->getPort();
                 if (($port !== 80 && !$secure) || ($port !== 443 && $secure)) {
                     $this->_hostInfo .= ':' . $port;
                 }
+            }else{
+                $this->_hostInfo = $http . '://' . $_SERVER['HTTP_HOST'];
             }
         }
         return $this->_hostInfo;
