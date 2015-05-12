@@ -45,11 +45,7 @@ $all_urls = array_merge($frame_urls, $libs_urls, $utils_urls);
 $urls     = array_map(function($url)use($domain) {
     return $domain . $url;
 }, $all_urls);
-print_r($urls);
-//$result = [];
-//foreach ($urls as $url) {
-//    $result = array_merge($result, requestUrl([$url]));
-//}
+//print_r($urls);
 $result      = requestUrl($urls);
 //var_dump($result);exit;
 $new_files   = [];
