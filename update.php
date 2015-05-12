@@ -38,7 +38,7 @@ $utils_urls = [
     '/src/libs/utils/Validator.php', //验证器类，必选
     '/src/libs/utils/ArrayUtil.php', //数组操作类，可选
     '/src/libs/utils/MailUtil.php', //数组操作类，可选
-    '/src/update.php', //更新代码，可选
+    '/update.php', //更新代码，可选
 ];
 
 $all_urls = array_merge($frame_urls, $libs_urls, $utils_urls);
