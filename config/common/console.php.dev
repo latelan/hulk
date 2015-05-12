@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * 命令行应用的配置文件
+ */
+
+$config = [
+    /**
+     * 控制器目录,默认为basePath/src/app/task/consoles
+     */
+//    'consolePath' => '@root/src/app/task/consoles',
+    /**
+     * 日志目录 默认为basePath/logs
+     */
+    'logPath' => '@root/logs/task',
+    /**
+     * components中配置的对象或者对象的配置文件会被注入到容器中
+     */
+    'components' => [
+
+    ],
+];
+return ArrayUtil::merge(require('web.php.dev'),$config);
+?>
