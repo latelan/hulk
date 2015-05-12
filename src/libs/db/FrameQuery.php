@@ -260,7 +260,11 @@ class FrameQuery extends FrameObject {
         try {
             //@TODO 此处可记录SQL日志 log($this->getRawSql())
             FrameLog::info($this->getRawSql(), 'sql.execute');
+            $begin_time = microtime(true);
             $this->pdoStatement->execute();
+            $spend = microtime(true) - $begin_time;
+            $consume =  round($spend * 1000, 2);
+            FrameLog::info('The above sql consume '.$consume.' ms', 'sql.execute');
             $n = $this->pdoStatement->rowCount();
             return $n;
         } catch (Exception $e) {
@@ -1119,7 +1123,11 @@ class FrameQuery extends FrameObject {
         try {
             //@TODO 此处记录查询语句 log($this->getRawSql())
             FrameLog::info($this->getRawSql(), 'sql.query');
+            $begin_time = microtime(true);
             $this->pdoStatement->execute();
+            $spend = microtime(true) - $begin_time;
+            $consume =  round($spend * 1000, 2);
+            FrameLog::info('The above sql consume '.$consume.' ms', 'sql.query');
             if ($method == '') {
                 return $this->pdoStatement;
             } else {
