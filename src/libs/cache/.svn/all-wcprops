@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/hulk_cloud/!svn/ver/1744/rds/trunk/src/libs/cache
+END
+FrameMemcache.php
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/hulk_cloud/!svn/ver/1627/rds/trunk/src/libs/cache/FrameMemcache.php
+END
+BaseCache.php
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/hulk_cloud/!svn/ver/1627/rds/trunk/src/libs/cache/BaseCache.php
+END
+FrameRedis.php
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/hulk_cloud/!svn/ver/1744/rds/trunk/src/libs/cache/FrameRedis.php
+END
