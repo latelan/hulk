@@ -190,9 +190,9 @@ abstract class FrameApp extends FrameDI {
      */
     public function setBasePath($path) {
         $p = realpath($path);
-        if ($p !== false && is_dir($path)) {
+        if ($p !== false && is_dir($p)) {
             $this->_basePath = $p;
-            static::setAlias('@root', $path);
+            static::setAlias('@root', $p);
         } else {
             throw new ExceptionFrame('the dir of "basePath"(' . $path . ') is not exist!');
 //            throw new ExceptionFrame('basePath设置的目录(' . $path . ')不存在');
