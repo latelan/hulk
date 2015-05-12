@@ -71,8 +71,13 @@ foreach ($result as $uri => $content) {
         file_put_contents($filepath, $content);
     }
 }
-
-print_r(['修改的文件' => $diff_files, '添加的文件' => $new_files, '异常文件' => $error_files]);
+$msg = [
+    '修改的文件' => $diff_files, '添加的文件' => $new_files, '异常文件' => $error_files
+];
+if(!empty($error_files)){
+    $msg['友情提示'] = '出现异常文件时，请再执行一次！';
+}
+print_r($msg);
 exit;
 
 /**
