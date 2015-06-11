@@ -13,9 +13,16 @@ class Controller extends FrameController {
     protected $_msg = [
         'errno'=>0,
         'errmsg'=>'',
+        'node'=>'',
         'data'=>[
         ]
     ];
+    
+    public function init()
+    {
+        parent::init();
+        $this->_msg['node'] = posix_uname()['nodename'];
+    }
     
     /**
      * 设置返回的_msg里面的data
@@ -167,11 +174,18 @@ class Controller extends FrameController {
             $message = isset($params['message'])?$params['message']:Validator::$messages[$validateMethod];
             foreach ($attributes as $attribute) {
                 //从url中获取attribute对应的值进行验证
-                $args[0] = $this->getRequest($attribute);
+                $validate_value = $value = $this->getRequest($attribute);
+                if(isset($params['before']) && is_callable($params['before'])){
+                    $validate_value = call_user_func($params['before'], $value);
+                }
+                $args[0] = $validate_value;
                 $res = call_user_func_array(['Validator', $validateMethod], $args);
                 //如果验证失败 抛出异常
                 if (!$res) {
-                    throw new ExceptionFrame('验证失败, '.$this->getAttributeLabel($attribute).' '.$message);
+                    $val_str = ' '.implode(', ', (array)$value).' ';
+                    $message = $this->getAttributeLabel($attribute).str_replace('{$value}', $val_str, $message);
+//                    throw new ExceptionBiz(Errors::ERR_PARAM.': '.$message);
+                    throw new ExceptionFrame('验证失败: '.$message);
                 }
             }
         }
