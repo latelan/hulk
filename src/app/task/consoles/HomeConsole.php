@@ -6,7 +6,7 @@
  * usage: php index.php home[/hello]
  * @author zhangjiulong
  */
-class HomeConsole extends FrameConsole{
+class HomeConsole extends BaseConsole{
     
     public function helloAction($word='world') {
         $str= 'hello,'.$word.'!';
