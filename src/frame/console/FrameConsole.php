@@ -62,7 +62,7 @@ class FrameConsole extends FrameObject {
             throw new ExceptionFrame('fail to resolve ' . $this->id . '/' . $actionId);
         }
         //执行action前钩子
-        if ($this->beforeAction()) {
+        if ($this->beforeAction($params)) {
             /**
              * 绑定并验证action方法的参数
              */
@@ -128,7 +128,7 @@ class FrameConsole extends FrameObject {
      * action方法的前钩子，子类覆盖时需return true或者parent::beforeAction，切记
      * @return boolean
      */
-    protected function beforeAction() {
+    protected function beforeAction($params) {
         return true;
     }
 
