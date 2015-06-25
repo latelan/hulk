@@ -9,7 +9,7 @@ return [
      */
     'debug'=>true,
     /**
-     * 设置应用的运行环境，取值范围 dev|beta|prod
+     * 设置应用的运行环境，取值范围 dev|beta|production
      */
     'env'=>'dev',
     /**
