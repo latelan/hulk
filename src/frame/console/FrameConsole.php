@@ -144,6 +144,34 @@ class FrameConsole extends FrameObject {
      * @return type
      */
     public function helpAction() {
+        $params = FrameConsoleApp::$app->get('request')->getParams();
+        if(empty($params)){
+            $this->showConsolesHelp();
+        }else{
+            $this->showActionsHelp();
+        }
+    }
+    
+    //显示console级别的提示信息
+    protected function showConsolesHelp()
+    {
+        $help = 'Usage: php ' . $this->getScriptName() . ' ' . 'console[/help]';
+        $consoles = $this->findConsoles();
+        $help = static::ansiFormat($help. "\n", [static::BOLD, static::FG_CYAN]);
+        $consolestr = "Consoles:\n";
+        if(empty($consoles)){
+            $consolestr .='Do not have console yet.';
+        }else{
+            foreach ($consoles as $console) {
+                $consolestr .= '      ' . $console . "\n";
+            }
+        }
+        echo $help . $consolestr;
+    }
+    
+    //显示action级别的提示信息
+    protected function showActionsHelp()
+    {
         $help = 'Usage: php ' . $this->getScriptName() . ' ' . $this->id;
         $options = $this->getOptionHelp();
         if (empty($options)) {
@@ -200,6 +228,27 @@ class FrameConsole extends FrameObject {
      */
     public function getScriptName() {
         return FrameConsoleApp::$app->getRequest()->getScriptName();
+    }
+    
+    /**
+     * 获取可以访问的console控制器
+     * @return array
+     */
+    public function findConsoles()
+    {
+        $path = FrameConsoleApp::$app->getConsolePath();
+        if(($dir=@opendir($path))===false){
+            return [];
+        }
+        $consoles = [];
+        while(($name = readdir($dir))!==false){
+            $file = $path.DIRECTORY_SEPARATOR.$name;
+            if(substr_compare($file, 'Console.php', -11, 11,true)===0 && is_file($file)){
+                $consoles[] = lcfirst(substr(basename($file),0,-11));
+            }
+        }
+        closedir($dir);
+        return $consoles;
     }
 
     /**
