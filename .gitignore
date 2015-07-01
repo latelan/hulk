@@ -1,2 +1,4 @@
 #日志目录不提交
 /logs/
+/nbproject/private/
+/nbproject/

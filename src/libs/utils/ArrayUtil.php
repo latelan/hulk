@@ -393,5 +393,35 @@ class ArrayUtil {
 
         return $res;
     }
+    
+    /**
+     * 将二维数组按一维中的某个键的指定值进行排序
+     * @param array $array 待排序的二维数组
+     * @param string $key 根据排序的键
+     * @param array $values 指定的顺序
+     * @return array
+     */
+    static public function sortByValues($array,$key,array $values) 
+    {
+        if(empty($array)){
+            return $array;
+        }
+        foreach ($values as $val) {
+            $list[$val] = [];
+        }
+        $other = [];
+        foreach ($array as $arr) {
+            if(in_array($arr[$key], $values)){
+                $list[$arr[$key]][] = $arr;
+            }else{
+                $other[] = $arr;
+            }
+        }
+        $res = [];
+        foreach ($list as $v) {
+            $res = array_merge($res, $v);
+        }
+        return array_merge($res,$other);
+    }
 
 }
