@@ -217,21 +217,21 @@ class FrameRequest extends FrameObject {
 
     /**
      * 返回hostname的url，eg：http://www.360.cn
-     * @return type
+     * @return string
      */
     public function getHostInfo() {
         if ($this->_hostInfo === null) {
             $secure = $this->getIsSecureConnection();
             $http   = $secure ? 'https' : 'http';
-            //先判断SERVER_NAME，有的请求，http_host不带端口值
-            if(isset($_SERVER['SERVER_NAME'])){
-                $this->_hostInfo = $http . '://' . $_SERVER['SERVER_NAME'];
-                $port            = $this->getPort();
-                if (($port !== 80 && !$secure) || ($port !== 443 && $secure)) {
-                    $this->_hostInfo .= ':' . $port;
-                }
+            if(isset($_SERVER['HTTP_HOST'])){
+                $http_host = explode(':', $_SERVER['HTTP_HOST'])[0];
+                $this->_hostInfo = $http . '://' . $http_host;
             }else{
-                $this->_hostInfo = $http . '://' . $_SERVER['HTTP_HOST'];
+                $this->_hostInfo = $http . '://' . $_SERVER['SERVER_NAME'];
+            }
+            $port = $this->getPort();
+            if (($port !== 80 && !$secure) || ($port !== 443 && $secure)) {
+                $this->_hostInfo .= ':' . $port;
             }
         }
         return $this->_hostInfo;
