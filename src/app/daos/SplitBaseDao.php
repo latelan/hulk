@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Description of FrameDao
+ * Description of SplitBaseDao
  * 数据库Dao基类
  * 
  * for example
@@ -22,34 +22,34 @@
   }
  * 
  * 单条语句插入
- * $res = UserDao::load()->insert(['name'=>'zhangsan']);
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->insert(['name'=>'zhangsan']);
  * return : 自增id
  * 
  * 多条语句插入：
- * $res = UserDao::load()->batchInsert(array('id','name'),array(
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->batchInsert(array('id','name'),array(
  *      array('16','lisi'),
  *      array('17','wangwu'),
  * ));
  * return: 影响的行数
  * 
  * 修改：
- * $res = UserDao::load()->update(array(
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->update(array(
  *      'name'=>'liuliu'
  * ),['id'=>17]);
  * return: 受影响的行数
  * 
  * 删除：
- * $res = UserDao::load()->delete(['id'=>17]);
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->delete(['id'=>17]);
  * 
  * 查询一行记录
- * $res = UserDao::load()->queryRow(1); //根据主键id查询
- * $res = UserDao::load()->queryRow(['name'=>'zhangjiulong']);  //根据条件查询
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->queryRow(1); //根据主键id查询
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->queryRow(['name'=>'zhangjiulong']);  //根据条件查询
  * return: 一维关联数组
  * ['id'=>1,'name'=>'zs','age'=>20]
  * 
  * 查询多行记录
- * $res = UserDao::load()->queryAll(['id'=>[1,2,3]]);   //查询id in (1,2,3)
- * $res = UserDao::load()->queryAll(['name'=>'zhangjiulong','age'=>4]); //查询年龄4岁，名字为zhangjiulong的用户
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->queryAll(['id'=>[1,2,3]]);   //查询id in (1,2,3)
+ * $res = UserDao::instance(['splitkey'=>$splitkey])->queryAll(['name'=>'zhangjiulong','age'=>4]); //查询年龄4岁，名字为zhangjiulong的用户
  * 
  * 复杂的查询请获取FrameQuery之后用query对象操作
  * $query = UserDao::find();
@@ -59,19 +59,10 @@
  */
 abstract class SplitBaseDao extends FrameObject {
     /**
-     * @var FrameQuery对象 
+     * 分隔表名的key
+     * @var string 
      */
-    private $_query;
-
-    public function getQuery()
-    {
-        return $this->_query;
-    }
-
-    public function setQuery(FrameQuery $query)
-    {
-        $this->_query = $query;
-    }
+    public $splitkey='';
 
     /**
      * 返回的是FrameQuery的对象实例
@@ -86,20 +77,6 @@ abstract class SplitBaseDao extends FrameObject {
     }
 
     /**
-     * 返回dao的单例,主要做增删改查操作
-     * @param string $split_key 分表关键字
-     * @param string $sql
-     * @param FrameDB $db
-     * @return SplitBaseDao  返回BaseDao的子类集合
-     */
-    static public function load($split_key = '', $sql = null, $db = null)
-    {
-        $query = (new FrameQuery(['sql' => $sql, 'db' => $db]))->from(static::tableName($split_key));
-        $dao   = static::instance(['query' => $query]);
-        return $dao;
-    }
-
-    /**
      * 执行一条插入语句
      * @param array $columns
      * @param boolean $return_id 是否要返回自增id，默认为true，false则返回影响的行数 
@@ -107,8 +84,9 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function insert($columns, $return_id = true)
     {
-        $num = $this->getQuery()->insert($this->getQuery()->getFrom(), $columns);
-        return $return_id ? $this->getQuery()->getLastInsertId() : $num;
+        $query = static::find();
+        $num = $query->insert(static::tableName($this->splitkey), $columns);
+        return $return_id ? $query->getLastInsertId() : $num;
     }
 
     /**
@@ -119,7 +97,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function batchInsert($columns, $rows)
     {
-        return $this->getQuery()->batchInsert($this->getQuery()->getFrom(), $columns, $rows);
+        return static::find()->batchInsert(static::tableName($this->splitkey), $columns, $rows);
     }
 
     /**
@@ -131,7 +109,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function update($columns, $condition = '', $params = [])
     {
-        return $this->getQuery()->update($this->getQuery()->getFrom(), $columns, $condition, $params);
+        return static::find()->update(static::tableName($this->splitkey), $columns, $condition, $params);
     }
 
     /**
@@ -142,7 +120,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function delete($condition = '', $params = [])
     {
-        return $this->getQuery()->delete($this->getQuery()->getFrom(), $condition, $params);
+        return static::find()->delete(static::tableName($this->splitkey), $condition, $params);
     }
 
     /**
@@ -153,7 +131,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function queryRow($param, $select = '*')
     {
-        $query = $this->getQuery()->select($select);
+        $query = static::find($this->splitkey)->select($select);
         //根据主键查询 @TODO 只支持单主键查询
         if (is_numeric($param)) {
             $query->andWhere(static::primaryKey() . '=:id', [':id' => $param]);
@@ -171,7 +149,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function queryAll(array $param, $select = '*')
     {
-        $query = $this->getQuery()->select($select)->where($param);
+        $query = static::find($this->splitkey)->select($select)->where($param);
         return $query->queryAll();
     }
 
@@ -183,7 +161,7 @@ abstract class SplitBaseDao extends FrameObject {
      */
     public function queryColumn($select, $param = [])
     {
-        $query = $this->getQuery()->select($select)->where($param);
+        $query = static::find($this->splitkey)->select($select)->where($param);
         return $query->queryColumn();
     }
 
@@ -200,5 +178,4 @@ abstract class SplitBaseDao extends FrameObject {
     {
         return 'id';
     }
-
 }
