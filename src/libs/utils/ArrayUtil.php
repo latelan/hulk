@@ -15,7 +15,8 @@ class ArrayUtil {
      * @param string $str
      * @return array
      */
-    public static function string2array($str) {/* {{{ */
+    public static function string2array($str)
+    {/* {{{ */
         if (is_array($str)) {
             return $str;
         }
@@ -30,7 +31,8 @@ class ArrayUtil {
      * @param string $pair_sep  k1=v1|k2=v2 (|)
      * @return array
      */
-    public static function str2kv($string, $kv_sep = '=', $pair_sep = '|') {
+    public static function str2kv($string, $kv_sep = '=', $pair_sep = '|')
+    {
         if (is_array($string))
             return $string;
         $ret_array = array();
@@ -60,7 +62,8 @@ class ArrayUtil {
      * @param mixed $default 默认返回值
      * @return mixed
      */
-    public static function getValue($array, $key, $default = null) {
+    public static function getValue($array, $key, $default = null)
+    {
         if (is_array($array)) {
             return isset($array[$key]) || array_key_exists($key, $array) ? $array[$key] : $default;
         } else {
@@ -92,7 +95,8 @@ class ArrayUtil {
      * @param string $key 数组的键名或者对象的属性名
      * @return array the indexed array
      */
-    public static function index($array, $key) {
+    public static function index($array, $key)
+    {
         $result = array();
         foreach ($array as $element) {
             $value          = self::getValue($element, $key);
@@ -126,7 +130,8 @@ class ArrayUtil {
      * @param string $key   用来分组的键名
      * @return array
      */
-    static public function group($array, $key) {
+    static public function group($array, $key)
+    {
         $result = array();
         if (!empty($array)) {
             foreach ($array as $element) {
@@ -160,9 +165,10 @@ class ArrayUtil {
      * will be re-indexed with integers.
      * @return array the list of column values
      */
-    public static function getColumn($array, $name, $keepKeys = false) {
+    public static function getColumn($array, $name, $keepKeys = false)
+    {
         $result = array();
-        if(empty($array)){
+        if (empty($array)) {
             return $result;
         }
         if ($keepKeys) {
@@ -190,6 +196,53 @@ class ArrayUtil {
         }
 
         return $result;
+    }
+
+    /**
+     * 从多维数组中删除某个|多个键的值
+     * 
+     * For example,
+     * 
+     * $array = [
+     *  ['id'=>3,'name'=>'zjl','age'=>30],
+     *  ['id'=>4,'name'=>'zjl','age'=>30],
+     *  ['id'=>5,'name'=>'zjl','age'=>30],
+     * ];
+     * 
+     * $result = ArrayUtil::unsetColumn($array, 'name');
+     * return 
+     * $array = [
+     *  ['id'=>3,'age'=>30],['id'=>4,'age'=>30],['id'=>5,'age'=>30],
+     * ];
+     * 
+     * $result = ArrayUtil::unsetColumn($array, ['name','age']);
+     * return 
+     * $array = [
+     *  ['id'=>3],['id'=>4],['id'=>5],
+     * ];
+     * 
+     * @param type $array
+     * @param type $name
+     * @return type
+     */
+    public function unsetColumn($array, $name)
+    {
+        if (empty($array) ||empty($name)) {
+            return $array;
+        }
+        foreach ($array as $k => $element) {
+            if (is_array($name)) {
+                foreach ($name as $val) {
+                    unset($element[$val]);
+                    $array[$k] = $element;
+                }
+            } else {
+                unset($element[$name]);
+                $array[$k] = $element;
+            }
+        }
+
+        return $array;
     }
 
     /**
@@ -232,9 +285,10 @@ class ArrayUtil {
      * @param string $group
      * @return array 返回键值对数组
      */
-    public static function map($array, $from, $to, $group = null) {
+    public static function map($array, $from, $to, $group = null)
+    {
         $result = array();
-        if(empty($array)){
+        if (empty($array)) {
             return $result;
         }
         foreach ($array as $element) {
@@ -260,7 +314,8 @@ class ArrayUtil {
      * @param array $arr
      * @return boolean
      */
-    public static function is_assoc($arr) {
+    public static function is_assoc($arr)
+    {
         return (is_array($arr) && (!count($arr) || count(array_filter(array_keys($arr), 'is_string')) == count($arr)));
     }
 
@@ -290,7 +345,8 @@ class ArrayUtil {
      * @param array $sortRules 由字段名和排序方向组成的数组,如['version'=>'desc','release'=>'desc'],表示将$array先按version排序再按release排序
      * @return type
      */
-    public static function mNatSort($array, $sortRules = array()) {
+    public static function mNatSort($array, $sortRules = array())
+    {
         if (empty($array))
             return $array;
         $bakRules = $sortRules;
@@ -343,7 +399,8 @@ class ArrayUtil {
      * @param string $order 排序方向 desc|asc
      * @return array
      */
-    public static function natSort($array, $key, $order) {
+    public static function natSort($array, $key, $order)
+    {
         if (empty($array) || !is_array($array)) {
             return $array;
         }
@@ -362,7 +419,6 @@ class ArrayUtil {
         }
         return $newArr;
     }
-    
 
     /**
      * 递归的合并两个数组,如果两个数组有相同的元素，后面的会覆盖签名的值
@@ -373,7 +429,7 @@ class ArrayUtil {
     public static function merge($a, $b)
     {
         $args = func_get_args();
-        $res = array_shift($args);
+        $res  = array_shift($args);
         while (!empty($args)) {
             $next = array_shift($args);
             foreach ($next as $k => $v) {
@@ -393,7 +449,7 @@ class ArrayUtil {
 
         return $res;
     }
-    
+
     /**
      * 将二维数组按一维中的某个键的指定值进行排序
      * @param array $array 待排序的二维数组
@@ -401,9 +457,9 @@ class ArrayUtil {
      * @param array $values 指定的顺序
      * @return array
      */
-    static public function sortByValues($array,$key,array $values) 
+    static public function sortByValues($array, $key, array $values)
     {
-        if(empty($array)){
+        if (empty($array)) {
             return $array;
         }
         foreach ($values as $val) {
@@ -411,9 +467,9 @@ class ArrayUtil {
         }
         $other = [];
         foreach ($array as $arr) {
-            if(in_array($arr[$key], $values)){
+            if (in_array($arr[$key], $values)) {
                 $list[$arr[$key]][] = $arr;
-            }else{
+            } else {
                 $other[] = $arr;
             }
         }
@@ -421,7 +477,7 @@ class ArrayUtil {
         foreach ($list as $v) {
             $res = array_merge($res, $v);
         }
-        return array_merge($res,$other);
+        return array_merge($res, $other);
     }
 
 }
