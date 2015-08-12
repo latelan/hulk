@@ -50,7 +50,7 @@ utils_urls = [
     'src/libs/utils/Validator.php', 
     'src/libs/utils/ArrayUtil.php', 
     'src/libs/utils/MailUtil.php', 
-    #'update.php', 
+    'update.py', 
 ]
 
 urls = frame_urls + libs_urls + utils_urls
