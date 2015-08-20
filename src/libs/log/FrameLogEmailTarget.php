@@ -7,12 +7,12 @@
  */
 class FrameLogEmailTarget extends FrameLogTarget {
 
-    public $capacity = 20;
+    public $capacity    = 20;
     public $from;
     public $subject;
     public $to;
-    public $cc       = '';
-    public $send_method = 'send';//send|qmsSend
+    public $cc          = '';
+    public $send_method = 'send'; //send|qmsSend
 
     /**
      * 数组展示的深度
@@ -32,7 +32,8 @@ class FrameLogEmailTarget extends FrameLogTarget {
      */
     private $_customMailMessages = [];
 
-    public function export() {
+    public function export()
+    {
         if (empty($this->to) || empty($this->from) || empty($this->subject)) {
             throw new ExceptionFrame('the property "to|from|subject" is required');
         }
@@ -57,6 +58,7 @@ class FrameLogEmailTarget extends FrameLogTarget {
             $mailInfo            = array_merge(['from' => $this->from, 'to' => $this->to, 'cc' => $this->cc, 'subject' => $this->subject . '-' . $category], $text['mailinfo']);
             unset($text['mailinfo']);
             $text['logtime']     = date('Y-m-d H:i:s', $time);
+            $text['user_ip']     = $_SERVER['REMOTE_ADDR'];
             //只取最外层的三唯数据
             $text                = $this->formatArr($text, $this->depth);
             $mailInfo['content'] = KvWidget::widget(['arr' => $text]);
@@ -66,7 +68,8 @@ class FrameLogEmailTarget extends FrameLogTarget {
     }
 
     //将message分成有mailinfo和没有mailinfo的
-    protected function divideMessages() {
+    protected function divideMessages()
+    {
         foreach ($this->messages as $message) {
             list($text, $level, $category, $time) = $message;
             if (is_array($text) && isset($text['mailinfo'])) {
@@ -85,7 +88,8 @@ class FrameLogEmailTarget extends FrameLogTarget {
     }
 
     //只取数组的depth层
-    public function formatArr($arr, $depth) {
+    public function formatArr($arr, $depth)
+    {
         foreach ($arr as $k => $v) {
             if (is_array($v)) {
                 if ($depth <= 1) {
@@ -98,7 +102,8 @@ class FrameLogEmailTarget extends FrameLogTarget {
         return $arr;
     }
 
-    public function formatMessage($message) {
+    public function formatMessage($message)
+    {
         list($text, $level, $category, $time) = $message;
         if (!is_array($text)) {
             $content['message'] = $text;
@@ -106,10 +111,11 @@ class FrameLogEmailTarget extends FrameLogTarget {
             $content = $text;
         }
         $content['logtime'] = date('Y-m-d H:i:s', $time);
+        $content['user_ip'] = $_SERVER['REMOTE_ADDR'];
         $this->formatArr($content, $this->depth);
         return KvWidget::widget(['arr' => $content, 'wrap' => false]);
     }
-    
+
     protected function send($mailinfo)
     {
         MailUtil::{$this->send_method}($mailinfo);
