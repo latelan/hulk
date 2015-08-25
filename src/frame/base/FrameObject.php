@@ -108,8 +108,18 @@ class FrameObject {
         if (method_exists($this, $getter)) {
             return $this->$getter();
         } else {
-            throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
+            return $this->__getException($name);
         }
+    }
+    
+    /**
+     * 调用魔术__get方法的属性不存在抛出的异常
+     * @param string $name
+     * @throws ExceptionFrame
+     */
+    protected function __getException($name)
+    {
+        throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
     }
 
     /**
@@ -122,9 +132,22 @@ class FrameObject {
         if (method_exists($this, $setter)) {
             $this->$setter($value);
         } else {
-            throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
+            $this->__setException($name, $value);
         }
     }
+    
+    /**
+     * 调用魔术__set方法的属性不存在抛出的异常
+     * @param string $name
+     * @param string $value
+     * @throws ExceptionFrame
+     */
+    protected function __setException($name, $value)
+    {
+        throw new ExceptionFrame('Property "'.  get_class($this).'.{'.$name.'}" is not defined.');
+    }
+    
+
 
     /**
      * 检查属性是否设置(并且不为null)

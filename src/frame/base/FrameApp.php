@@ -280,25 +280,19 @@ abstract class FrameApp extends FrameDI {
      * @param string $name
      * @return mixed
      */
-    public function __get($name) {
-        try {
-            return parent::__get($name);
-        } catch (Exception $e) {
-            return $this->__attrs__[$name];
-        }
+    protected function __getException($name)
+    {
+        return $this->__attrs__[$name];
     }
-
+    
     /**
      * 赋值应用属性的顺序 定义的公有属性--DI容器中的对象--setName($value)---__attrs__属性（非公有）
      * @param string $name
      * @param mixed $value
      */
-    public function __set($name, $value) {
-        try {
-            parent::__set($name, $value);
-        } catch (Exception $e) {
-            $this->__attrs__[$name] = $value;
-        }
+    protected function __setException($name, $value)
+    {
+        $this->__attrs__[$name] = $value;
     }
 
     /**
