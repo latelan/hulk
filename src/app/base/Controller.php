@@ -36,8 +36,7 @@ class Controller extends FrameController {
     protected function beforeAction() {
         
         //执行验证请求的参数 失败则抛出异常
-        $this->setScenario($this->actionId);
-        $this->validate();
+        $this->setScenario($this->actionId)->validate();
         return parent::beforeAction();
     }
 
