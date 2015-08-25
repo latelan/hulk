@@ -48,6 +48,7 @@ libs_urls = [
 #工具urls
 utils_urls = [ 
     'src/libs/utils/Validator.php', 
+    'src/libs/utils/ValidateTrait.php', 
     'src/libs/utils/ArrayUtil.php', 
     'src/libs/utils/MailUtil.php', 
     'update.py', 
