@@ -59,7 +59,7 @@ class FrameConsole extends FrameObject {
         //根据actionid生成action的方法名
         $action = $this->resolveActionMethod($actionId);
         if ($action === null) {
-            throw new ExceptionFrame('fail to resolve ' . $this->id . '/' . $actionId);
+            throw new ExceptionFrame('fail to resolve ' . htmlspecialchars($this->id . '/' . $actionId));
         }
         //执行action前钩子
         if ($this->beforeAction($params)) {

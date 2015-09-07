@@ -56,7 +56,7 @@ class FrameController extends FrameObject {
         //根据actionid生成action的方法名
         $action = $this->resolveActionMethod($actionId);
         if ($action === null) {
-            throw new ExceptionFrame('fail to resolve ' . $this->id . '/' . $actionId);
+            throw new ExceptionFrame('fail to resolve ' . htmlspecialchars($this->id . '/' . $actionId));
 //            throw new ExceptionFrame('解析请求' . $this->id . '/' . $actionId . '失败');
         }
         //执行action前钩子

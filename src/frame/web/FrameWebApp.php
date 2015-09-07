@@ -108,7 +108,7 @@ class FrameWebApp extends FrameApp {
                 return $response;
             }
         } else {
-            throw new ExceptionFrame('unknow route ' . $route);
+            throw new ExceptionFrame('unknow route ' . htmlspecialchars($route));
 //            throw new ExceptionFrame('解析Url请求失败！' . $route);
         }
     }
