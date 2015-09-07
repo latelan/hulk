@@ -225,7 +225,7 @@ class ArrayUtil {
      * @param type $name
      * @return type
      */
-    public function unsetColumn($array, $name)
+    static public function unsetColumn($array, $name)
     {
         if (empty($array) ||empty($name)) {
             return $array;
