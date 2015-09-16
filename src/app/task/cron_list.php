@@ -81,41 +81,51 @@ function parseCron($a, $min)
     }
 }
 
-function runScript($file, $dir = './', $bg = true)
+//执行任务
+function runScript($file, $bg = true)
 {
-    $runer = array(
+    $cmd = getCmd($file, $bg);
+    if ($cmd === false) {
+        return false;
+    }
+    system($cmd);
+    echo date('Y-m-d H:i:s') . " " . $cmd . "\n";
+}
+
+//增加lockf机制，保证只执行任务一次
+function runScriptOnce($file, $bg = true)
+{
+    $cmd = getCmd($file, $bg);
+    if ($cmd === false) {
+        return false;
+    }
+    $lock = md5($file) . '.lock';
+    $cmd  = '/usr/bin/lockf -t 0 ' . $lock . ' ' . $cmd;
+    system($cmd);
+    echo date('Y-m-d H:i:s') . " " . $cmd . "\n";
+}
+
+//获取执行的命令
+function getCmd($file, $bg = true)
+{
+    $runer   = array(
         'sh'  => '/bin/sh',
         'php' => '/usr/local/bin/php',
         'pl'  => '/usr/bin/perl',
         'py'  => '/usr/bin/python',
     );
-    if (!strlen($dir) || $dir == './') {
-        $dir    = './';
-        $bakdir = './';
-    } else {
-        $bakdir = '..';
-    }
-    chdir($dir);
-    $runFile = explode(' ', $file);
-    if (!file_exists($runFile[0])) {
-        echo date('Y-m-d H:i:s') . " " . $file . " file not found\n";
+    $runFile = explode(' ', $file)[0];
+    if (!file_exists($runFile)) {
+        echo date('Y-m-d H:i:s') . " " . $runFile . " file not found\n";
         return false;
     }
-
-    $tmp    = explode('.', $file);
-    $suffix = $tmp[count($tmp) - 1];
-    $suffix = explode(' ', $suffix);
-    $exer   = $runer[$suffix[0]];
+    $exer = $runer[end(explode('.', $runFile))];
     if (empty($exer)) {
         echo date('Y-m-d H:i:s') . " " . $file . " exer not found\n";
         return false;
     }
-//    $name = $tmp[0];
-//    $cmd  = $exer . " $file >>" . $name . $logtag . ".log 2>&1 $bg";
-    $cmd = $exer . ' ' . $file . ($bg?' &':''); ///usr/local/bin/php index.php home/hello &
-    system($cmd);
-    echo date('Y-m-d H:i:s') . " " . $cmd . "\n";
-    chdir($bakdir);
+    $cmd = $exer . ' ' . $file . ($bg ? ' &' : ''); ///usr/local/bin/php index.php home/hello &
+    return $cmd;
 }
 ?>
 
