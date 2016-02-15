@@ -87,7 +87,7 @@ class FrameLog extends FrameObject {
                 } catch (Exception $e) {
                     $target->enabled = false;
                     $targetErrors[]  = [
-                        'Uable to send log via ' . get_class($target) . ':' . $e->getMessage(),
+                        'Unable to send log via ' . get_class($target) . ':' . $e->getMessage(),
                         FrameLog::LEVEL_ERROR,
                         __METHOD__,
                         microtime(true),
